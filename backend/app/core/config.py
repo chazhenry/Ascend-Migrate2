@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     algorithm: str = Field(default="HS256", alias="ALGORITHM")
     access_token_expire_minutes: int = Field(default=480, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     dev_auth_bypass: bool = Field(default=False, alias="DEV_AUTH_BYPASS")
+    postgres_host: str | None = Field(default=None, alias="POSTGRES_HOST")
+    postgres_port: int = Field(default=5432, alias="POSTGRES_PORT")
+    postgres_user: str | None = Field(default=None, alias="POSTGRES_USER")
+    postgres_password: str | None = Field(default=None, alias="POSTGRES_PASSWORD")
+    postgres_db: str | None = Field(default=None, alias="POSTGRES_DB")
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
     deepseek_api_key: str = Field(default="", alias="DEEPSEEK_API_KEY")
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
@@ -39,6 +44,11 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
+    if settings.postgres_host and settings.postgres_user and settings.postgres_password and settings.postgres_db:
+        settings.database_url = (
+            f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}"
+            f"@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
+        )
     settings.artifacts_dir.mkdir(parents=True, exist_ok=True)
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     settings.generated_dir.mkdir(parents=True, exist_ok=True)

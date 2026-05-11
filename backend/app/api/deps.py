@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import uuid4
 
 from fastapi import Depends, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -15,6 +16,16 @@ from app.models.user import User
 bearer_scheme = HTTPBearer(auto_error=False)
 DBSession = Annotated[AsyncSession, Depends(get_db_session)]
 settings = get_settings()
+
+
+def _build_ephemeral_dev_user() -> User:
+    return User(
+        id=uuid4(),
+        email="dev@local.test",
+        name="Dev User",
+        password_hash="dev-mode-only",
+        role="admin",
+    )
 
 
 async def _get_or_create_dev_user(db: DBSession) -> User:
@@ -46,7 +57,10 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> User:
     if settings.dev_auth_bypass:
-        return await _get_or_create_dev_user(db)
+        try:
+            return await _get_or_create_dev_user(db)
+        except Exception:
+            return _build_ephemeral_dev_user()
     if credentials is None:
         raise APIError("Authentication is required.", "auth_required", 401)
     try:
@@ -67,7 +81,10 @@ async def get_current_user_or_token_query(
     token: str | None = Query(default=None),
 ) -> User:
     if settings.dev_auth_bypass:
-        return await _get_or_create_dev_user(db)
+        try:
+            return await _get_or_create_dev_user(db)
+        except Exception:
+            return _build_ephemeral_dev_user()
     token_value = credentials.credentials if credentials is not None else token
     if not token_value:
         raise APIError("Authentication is required.", "auth_required", 401)
