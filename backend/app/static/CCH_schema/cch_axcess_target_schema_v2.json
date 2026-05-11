@@ -1,0 +1,166 @@
+{
+    "entities": [
+        {
+            "entity": "Client",
+            "fields": [
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "client_name",
+                    "required": true
+                },
+                {
+                    "name": "entity_type",
+                    "required": true
+                },
+                {
+                    "name": "office_id",
+                    "required": false
+                },
+                {
+                    "name": "status",
+                    "required": false
+                }
+            ],
+            "enum_fields": {
+                "entity_type": [
+                    "Individual",
+                    "Business",
+                    "Trust",
+                    "Nonprofit"
+                ],
+                "status": [
+                    "Active",
+                    "Inactive",
+                    "Prospect"
+                ]
+            },
+            "date_fields": []
+        },
+        {
+            "entity": "Staff",
+            "fields": [
+                {
+                    "name": "staff_id",
+                    "required": true
+                },
+                {
+                    "name": "staff_name",
+                    "required": true
+                },
+                {
+                    "name": "staff_email",
+                    "required": false
+                },
+                {
+                    "name": "status",
+                    "required": false
+                }
+            ],
+            "enum_fields": {
+                "status": [
+                    "Active",
+                    "Inactive"
+                ]
+            },
+            "date_fields": []
+        },
+        {
+            "entity": "Engagement",
+            "fields": [
+                {
+                    "name": "engagement_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "engagement_name",
+                    "required": true
+                },
+                {
+                    "name": "open_date",
+                    "required": false
+                },
+                {
+                    "name": "close_date",
+                    "required": false
+                }
+            ],
+            "enum_fields": {},
+            "date_fields": [
+                "open_date",
+                "close_date"
+            ]
+        },
+        {
+            "entity": "TimeEntry",
+            "fields": [
+                {
+                    "name": "time_entry_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "staff_id",
+                    "required": true
+                },
+                {
+                    "name": "entry_date",
+                    "required": true
+                },
+                {
+                    "name": "hours",
+                    "required": true
+                }
+            ],
+            "enum_fields": {},
+            "date_fields": [
+                "entry_date"
+            ]
+        },
+        {
+            "entity": "Invoice",
+            "fields": [
+                {
+                    "name": "invoice_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "invoice_date",
+                    "required": true
+                },
+                {
+                    "name": "amount",
+                    "required": true
+                },
+                {
+                    "name": "status",
+                    "required": false
+                }
+            ],
+            "enum_fields": {
+                "status": [
+                    "Draft",
+                    "Final",
+                    "Paid",
+                    "Voided"
+                ]
+            },
+            "date_fields": [
+                "invoice_date"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+export const queryKeys = {
+    me: ["me"] as const,
+    projects: ["projects"] as const,
+    project: (projectId: string) => ["project", projectId] as const,
+    discoveryQuestions: ["discovery-questions"] as const,
+    sqlTemplates: ["sql-templates"] as const,
+    acquisitions: ["acquisitions"] as const,
+    acquisition: (acquisitionId: string) => ["acquisition", acquisitionId] as const,
+    acquisitionFiles: (acquisitionId: string) => ["acquisition-files", acquisitionId] as const,
+    stageStatus: (acquisitionId: string, stage: number) => ["stage-status", acquisitionId, stage] as const,
+    stageArtifact: (acquisitionId: string, stage: number) => ["stage-artifact", acquisitionId, stage] as const,
+    discovery: (acquisitionId: string) => ["discovery", acquisitionId] as const,
+    manifest: (acquisitionId: string) => ["manifest", acquisitionId] as const,
+    manifestOverrides: (acquisitionId: string) => ["manifest-overrides", acquisitionId] as const,
+    artifacts: (acquisitionId: string) => ["artifacts", acquisitionId] as const,
+} as const;

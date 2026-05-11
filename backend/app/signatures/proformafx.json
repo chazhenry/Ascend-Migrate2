@@ -1,0 +1,17 @@
+{
+    "system_name": "ProSystem fx",
+    "version_hint": "Classic",
+    "required_tables": [
+        "client",
+        "return",
+        "staff"
+    ],
+    "scored_columns": [
+        "client.client_id",
+        "client.client_name",
+        "return.return_id",
+        "staff.staff_id",
+        "invoice.invoice_id"
+    ],
+    "max_score": 12
+}

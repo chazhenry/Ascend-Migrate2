@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\MyProjects\\\\Ascend_Migrate\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\MyProjects\\\\Ascend_Migrate\\\\frontend\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\MyProjects\\\\Ascend_Migrate\\\\backend\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\MyProjects\\\\Ascend_Migrate\\\\frontend\\\\src\" -Recurse -Depth 2 | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\('C:\\\\MyProjects\\\\Ascend_Migrate\\\\frontend\\\\', ''\\) })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\MyProjects\\\\Ascend_Migrate\\\\backend\\\\app\" -Recurse -Depth 2 | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\('C:\\\\MyProjects\\\\Ascend_Migrate\\\\backend\\\\', ''\\) })",
+      "Bash(New-Item -ItemType Directory -Path \"c:\\\\MyProjects\\\\Ascend_Migrate\\\\frontend\\\\src\\\\context\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"done\")",
+      "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\MyProjects\\\\Ascend_Migrate\\\\frontend\\\\src\\\\context\" -Force)",
+      "Bash(xargs grep -l \"CCH\\\\|cch\")"
+    ]
+  }
+}

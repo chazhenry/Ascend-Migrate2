@@ -1,0 +1,4434 @@
+{
+  "schema_name": "CCH Axcess Target Schema",
+  "schema_version": "2.0",
+  "schema_purpose": "Authoritative destination schema for AI-assisted data migration \u2014 defines all fields, constraints, and transformation rules for the CCH Axcess conversion template",
+  "extracted_from": "Conversion_Excel_Template_for_CCH_Axcess.xlsx",
+  "extracted_date": "2026-04-08",
+  "schema_upgraded_date": "2026-04-14",
+  "entity_count": 15,
+  "field_definition_spec": {
+    "field_name": "Target column name in the CCH Axcess conversion template / ADU database",
+    "field_type": "Data type: string, int, date, decimal, boolean",
+    "constraints": "Object containing max_length, regex pattern, unique flag, foreign keys, restrict_to picklist references",
+    "format": "Expected format pattern (e.g., MM/DD/YYYY, XX-XXXXXXX, email)",
+    "required": "Whether field is mandatory for CCH import",
+    "enum": "Allowed value list when field is restricted to specific values",
+    "description": "Semantic purpose \u2014 used by AI during field matching and discovery",
+    "transformation_notes": "Mechanical rules \u2014 used by AI during code generation and data transformation",
+    "common_source_names": "Aliases the AI watches for during source schema discovery (e.g., acct_id, ledger_code)",
+    "example_values": "Concrete sample values for validation and AI pattern matching"
+  },
+  "global_notes": [
+    "For any code values, you may provide the old codes and supply a mapping table to the Axcess setup OR you can provide the new codes here",
+    "Leading zeros on IDs: ensure file is formatted as Text",
+    "Client ID must be consistent across all entities (Client, AR, WIP, Contacts, Billing, Groups)"
+  ],
+  "entities": {
+    "Client": {
+      "description": "Core client records \u2014 one row per client or sub-client",
+      "sheet_name": "Client",
+      "primary_key": [
+        "Client ID",
+        "Client Sub-ID"
+      ],
+      "referenced_by": [
+        "AR",
+        "WIP",
+        "Contacts (CCIU)",
+        "Client Billing General Info",
+        "Address Invoice and Statements",
+        "Client Email Invoices",
+        "Contact Email Invoices",
+        "Client Custom Field Values",
+        "Billing Group Assignments",
+        "Client Group Assignments",
+        "Client Primary Contact Info"
+      ],
+      "fields": [
+        {
+          "field_name": "Office",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Axcess office code identifying the practice office responsible for this client",
+          "transformation_notes": "Must match an existing Office code in Axcess setup. For acquisitions, map source office/location/branch to Ascend's master office code list.",
+          "common_source_names": [
+            "office",
+            "office_code",
+            "office_id",
+            "branch",
+            "location",
+            "location_code",
+            "branch_code",
+            "practice_office"
+          ],
+          "example_values": [
+            "MAIN",
+            "ATL",
+            "NYC",
+            "CHI01"
+          ]
+        },
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Unique client identifier \u2014 primary key linking all client-related data across AR, WIP, Contacts, Billing, and Groups",
+          "transformation_notes": "Must be alphanumeric string. Preserve leading zeros by formatting as Text. Must be consistent across ALL entity sheets. If source uses numeric IDs, zero-pad or prefix to meet Ascend's ID convention.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "client_number",
+            "client_code",
+            "acct_id",
+            "account_id",
+            "account_number",
+            "customer_id",
+            "customer_no",
+            "cust_id",
+            "matter_id",
+            "engagement_id"
+          ],
+          "example_values": [
+            "000012345",
+            "SMITH001",
+            "CL-10042",
+            "A1234"
+          ]
+        },
+        {
+          "field_name": "Client Sub-ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Subordinate identifier for sub-clients or sub-engagements under a parent Client ID",
+          "transformation_notes": "Format as Text if leading zeros. Used for multi-entity client families or sub-engagements. Combine with Client ID using dot notation in referencing entities (e.g., 1584.123).",
+          "common_source_names": [
+            "sub_id",
+            "sub_client",
+            "sub_account",
+            "sub_code",
+            "matter_number",
+            "engagement_sub",
+            "sub_entity"
+          ],
+          "example_values": [
+            "001",
+            "TAX",
+            "AUD",
+            "123"
+          ]
+        },
+        {
+          "field_name": "Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Full display name of the client entity",
+          "transformation_notes": "For individuals, typically 'First Last' or 'Last, First'. For businesses, use legal entity name. Trim whitespace and normalize casing.",
+          "common_source_names": [
+            "name",
+            "client_name",
+            "full_name",
+            "display_name",
+            "entity_name",
+            "company_name",
+            "business_name",
+            "account_name",
+            "customer_name"
+          ],
+          "example_values": [
+            "Smith, John & Jane",
+            "Acme Corporation LLC",
+            "Johnson Family Trust"
+          ]
+        },
+        {
+          "field_name": "Sort Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Alphabetical sort key \u2014 typically 'Last, First' for individuals, business name for entities",
+          "transformation_notes": "For individuals: format as 'LastName, FirstName'. For businesses: use business name. Used for directory listings and report sorting. If source lacks a sort name, derive from client name.",
+          "common_source_names": [
+            "sort_name",
+            "sort_key",
+            "alpha_name",
+            "last_first",
+            "filing_name",
+            "index_name"
+          ],
+          "example_values": [
+            "Smith, John",
+            "Acme Corporation",
+            "Johnson Family Trust"
+          ]
+        },
+        {
+          "field_name": "Client Sub Description",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Descriptive label for a sub-client record, identifying the purpose of the sub-engagement",
+          "transformation_notes": "Optional free-text. Typically describes the nature of the sub-engagement (e.g., 'Tax Return', 'Audit', 'Bookkeeping').",
+          "common_source_names": [
+            "sub_description",
+            "sub_desc",
+            "engagement_description",
+            "matter_description",
+            "sub_name"
+          ],
+          "example_values": [
+            "Tax Preparation",
+            "Monthly Bookkeeping",
+            "Annual Audit"
+          ]
+        },
+        {
+          "field_name": "Entity",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Corporation",
+            "Employee Plan",
+            "Fiduciary",
+            "Individual",
+            "Non-Profit",
+            "Partnership",
+            "Other"
+          ],
+          "description": "Legal entity type classification for the client \u2014 drives tax form selection and compliance workflows",
+          "transformation_notes": "Map source entity types to CCH allowed values. Common mappings: 'LLC' -> varies by tax election (Partnership or Corporation), 'Sole Prop' -> 'Individual', '501(c)(3)' -> 'Non-Profit', 'Estate' -> 'Fiduciary'.",
+          "common_source_names": [
+            "entity_type",
+            "entity",
+            "client_type",
+            "org_type",
+            "organization_type",
+            "business_type",
+            "tax_entity",
+            "legal_entity",
+            "entity_class"
+          ],
+          "example_values": [
+            "Corporation",
+            "Individual",
+            "Partnership",
+            "Non-Profit"
+          ]
+        },
+        {
+          "field_name": "Status",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Active",
+            "Inactive",
+            "On Hold (inactive with balance)"
+          ],
+          "description": "Current lifecycle status of the client record \u2014 controls visibility and billing eligibility",
+          "transformation_notes": "Map source status values: common mappings include 'Current'/'Open' -> 'Active', 'Closed'/'Terminated' -> 'Inactive', 'Suspended'/'Collections' -> 'On Hold (inactive with balance)'. Clients with outstanding AR balances should use 'On Hold' rather than 'Inactive'.",
+          "common_source_names": [
+            "status",
+            "client_status",
+            "account_status",
+            "active_flag",
+            "is_active",
+            "state",
+            "record_status"
+          ],
+          "example_values": [
+            "Active",
+            "Inactive",
+            "On Hold (inactive with balance)"
+          ]
+        },
+        {
+          "field_name": "FYE",
+          "field_type": "int",
+          "required": true,
+          "constraints": {
+            "min": 1,
+            "max": 12
+          },
+          "format": null,
+          "enum": null,
+          "description": "Fiscal year-end month (1-12) \u2014 required for Workstream and Workflow scheduling in Axcess",
+          "transformation_notes": "Integer 1-12. If source stores as date, extract month. If source stores as text (e.g., 'December'), convert to numeric. Calendar year-end clients = 12. Non-standard FYE clients need exact month.",
+          "common_source_names": [
+            "fye",
+            "fiscal_year_end",
+            "year_end",
+            "fy_end",
+            "year_end_month",
+            "fiscal_month",
+            "fye_month",
+            "ye_month"
+          ],
+          "example_values": [
+            12,
+            6,
+            3,
+            9
+          ]
+        },
+        {
+          "field_name": "Federal ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "regex": "^\\d{2}-\\d{7}$"
+          },
+          "format": "XX-XXXXXXX",
+          "enum": null,
+          "description": "Federal Employer Identification Number (EIN) for business entities",
+          "transformation_notes": "Format as EIN: XX-XXXXXXX. Strip spaces and validate 9-digit format. For individuals, use SSN fields instead. Some source systems store EIN without hyphen \u2014 add hyphen at position 2.",
+          "common_source_names": [
+            "federal_id",
+            "ein",
+            "fein",
+            "fed_id",
+            "tax_id",
+            "employer_id",
+            "federal_tax_id",
+            "tin",
+            "taxpayer_id"
+          ],
+          "example_values": [
+            "12-3456789",
+            "98-7654321"
+          ]
+        },
+        {
+          "field_name": "SSN1",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Primary Social Security Number \u2014 typically for the first individual on a joint return",
+          "transformation_notes": "Format as XXX-XX-XXXX or raw 9 digits depending on source. Handle with PII security protocols. Validate 9-digit format. Strip non-numeric characters before validation.",
+          "common_source_names": [
+            "ssn",
+            "ssn1",
+            "social_security",
+            "ssn_primary",
+            "taxpayer_ssn",
+            "primary_ssn",
+            "ss_number"
+          ],
+          "example_values": [
+            "123-45-6789"
+          ]
+        },
+        {
+          "field_name": "SSN2",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Secondary Social Security Number \u2014 typically for the spouse on a joint return",
+          "transformation_notes": "Same format rules as SSN1. Only populated for joint/married filing clients. Handle with PII security protocols.",
+          "common_source_names": [
+            "ssn2",
+            "spouse_ssn",
+            "secondary_ssn",
+            "ssn_spouse",
+            "ss_number_2"
+          ],
+          "example_values": [
+            "987-65-4321"
+          ]
+        },
+        {
+          "field_name": "Line of Business",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Line of Business options"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Industry classification for the client \u2014 used for reporting and engagement categorization",
+          "transformation_notes": "Must match an Axcess-available Line of Business option. Map source industry codes (NAICS, SIC) or free-text industry to Axcess picklist values.",
+          "common_source_names": [
+            "line_of_business",
+            "lob",
+            "industry",
+            "industry_code",
+            "business_line",
+            "sector",
+            "naics",
+            "sic_code",
+            "industry_type"
+          ],
+          "example_values": [
+            "Construction",
+            "Nursing",
+            "Government",
+            "Manufacturing",
+            "Real Estate"
+          ]
+        },
+        {
+          "field_name": "Primary Service Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Service Types"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Primary engagement service classification \u2014 identifies the main service provided to this client",
+          "transformation_notes": "Must match an Axcess-available Service Type. Map source service/engagement types to Axcess picklist. Common source values like 'Tax Prep' -> 'Tax', 'Financial Statement' -> 'Audit & Accounting'.",
+          "common_source_names": [
+            "service_type",
+            "primary_service",
+            "engagement_type",
+            "service_code",
+            "work_type",
+            "service_category",
+            "engagement_category"
+          ],
+          "example_values": [
+            "Audit & Accounting",
+            "Tax",
+            "Compilation",
+            "Review",
+            "Consulting"
+          ]
+        },
+        {
+          "field_name": "Client Group",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Named grouping for client segmentation \u2014 used for reporting and batch operations",
+          "transformation_notes": "Free-text group name. If source uses client categories or tags, map to group names. Groups must be created via Client Group Creation entity before assignment.",
+          "common_source_names": [
+            "client_group",
+            "group",
+            "category",
+            "client_category",
+            "segment",
+            "classification",
+            "client_class"
+          ],
+          "example_values": [
+            "Premium Clients",
+            "Tax Only",
+            "Full Service",
+            "Nonprofit"
+          ]
+        },
+        {
+          "field_name": "Client Addr1",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client primary address line 1 \u2014 street address",
+          "transformation_notes": "First line of client mailing address. If source has a single address field, parse into Addr1/City/State/Zip components.",
+          "common_source_names": [
+            "address1",
+            "addr1",
+            "address_line_1",
+            "street",
+            "street_address",
+            "address",
+            "mailing_address",
+            "client_address"
+          ],
+          "example_values": [
+            "123 Main Street",
+            "456 Corporate Blvd, Suite 200"
+          ]
+        },
+        {
+          "field_name": "Client Addr2",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client primary address line 2 \u2014 suite, floor, or additional address detail",
+          "transformation_notes": "Optional secondary address line. Common for suite numbers, floor, building name, or c/o.",
+          "common_source_names": [
+            "address2",
+            "addr2",
+            "address_line_2",
+            "suite",
+            "apt",
+            "unit",
+            "address_2"
+          ],
+          "example_values": [
+            "Suite 100",
+            "Floor 3",
+            "Building B"
+          ]
+        },
+        {
+          "field_name": "Client Addr3",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client primary address line 3 \u2014 rarely used overflow address line",
+          "transformation_notes": "Tertiary address line, seldom populated. Use only when address requires three lines.",
+          "common_source_names": [
+            "address3",
+            "addr3",
+            "address_line_3"
+          ],
+          "example_values": [
+            "Attn: Accounting Dept"
+          ]
+        },
+        {
+          "field_name": "Client City",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "City component of the client primary address",
+          "transformation_notes": "Standard city name. Normalize casing (title case). If source has combined city/state, parse and split.",
+          "common_source_names": [
+            "city",
+            "client_city",
+            "town",
+            "municipality"
+          ],
+          "example_values": [
+            "Raleigh",
+            "New York",
+            "Chicago",
+            "San Francisco"
+          ]
+        },
+        {
+          "field_name": "Client State/Province",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available State/Province options"
+          },
+          "format": null,
+          "enum": null,
+          "description": "State or province component of the client primary address",
+          "transformation_notes": "Must match Axcess available State/Province options. Convert full state names to abbreviations if Axcess expects codes (e.g., 'North Carolina' -> 'NC').",
+          "common_source_names": [
+            "state",
+            "client_state",
+            "province",
+            "state_province",
+            "state_code",
+            "region"
+          ],
+          "example_values": [
+            "NC",
+            "NY",
+            "CA",
+            "TX"
+          ]
+        },
+        {
+          "field_name": "Client Zip/Postal Code",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "ZIP or postal code component of the client primary address",
+          "transformation_notes": "Format as string to preserve leading zeros. US: 5-digit or ZIP+4 (XXXXX-XXXX). Validate format matches country.",
+          "common_source_names": [
+            "zip",
+            "zip_code",
+            "postal_code",
+            "zipcode",
+            "client_zip",
+            "postcode"
+          ],
+          "example_values": [
+            "27601",
+            "10001-1234",
+            "90210"
+          ]
+        },
+        {
+          "field_name": "Client Country",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Country options"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Country component of the client primary address",
+          "transformation_notes": "Must match Axcess available Country options. Default to 'USA' or 'US' for domestic clients if source is blank. Normalize country names to Axcess codes.",
+          "common_source_names": [
+            "country",
+            "client_country",
+            "country_code",
+            "nation"
+          ],
+          "example_values": [
+            "USA",
+            "CAN",
+            "GBR"
+          ]
+        },
+        {
+          "field_name": "Attn",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Attention line for client correspondence \u2014 directs mail to a specific person",
+          "transformation_notes": "Free-text. Typically a contact name prefixed with 'Attn:' in the source. Strip the 'Attn:' prefix if present in source data.",
+          "common_source_names": [
+            "attn",
+            "attention",
+            "attention_to",
+            "care_of",
+            "c_o"
+          ],
+          "example_values": [
+            "John Smith",
+            "Accounting Department"
+          ]
+        },
+        {
+          "field_name": "Salutation",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Greeting line for client correspondence (e.g., 'Dear Mr. Smith')",
+          "transformation_notes": "Free-text salutation. If source lacks this, can be derived from client name and entity type.",
+          "common_source_names": [
+            "salutation",
+            "greeting",
+            "dear_line",
+            "correspondence_greeting"
+          ],
+          "example_values": [
+            "Dear Mr. & Mrs. Smith",
+            "Dear Board Members",
+            "Dear John"
+          ]
+        },
+        {
+          "field_name": "Billing Addr1",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Billing address line 1 \u2014 may differ from client primary address",
+          "transformation_notes": "If source has no separate billing address, leave blank and Axcess uses client address. Only populate if billing address differs from client address.",
+          "common_source_names": [
+            "billing_address1",
+            "bill_addr1",
+            "billing_street",
+            "invoice_address",
+            "bill_to_address"
+          ],
+          "example_values": [
+            "789 Billing Lane",
+            "PO Box 1234"
+          ]
+        },
+        {
+          "field_name": "Billing Addr2",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Billing address line 2",
+          "transformation_notes": "Secondary billing address line. Same rules as Client Addr2.",
+          "common_source_names": [
+            "billing_address2",
+            "bill_addr2",
+            "billing_suite"
+          ],
+          "example_values": [
+            "Suite 400"
+          ]
+        },
+        {
+          "field_name": "Billing Addr3",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Billing address line 3",
+          "transformation_notes": "Tertiary billing address line. Rarely used.",
+          "common_source_names": [
+            "billing_address3",
+            "bill_addr3"
+          ],
+          "example_values": []
+        },
+        {
+          "field_name": "Billing City",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "City component of the billing address",
+          "transformation_notes": "Same normalization rules as Client City.",
+          "common_source_names": [
+            "billing_city",
+            "bill_city",
+            "invoice_city"
+          ],
+          "example_values": [
+            "Chicago",
+            "Atlanta"
+          ]
+        },
+        {
+          "field_name": "Billing State/Province",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available State/Province options"
+          },
+          "format": null,
+          "enum": null,
+          "description": "State or province component of the billing address",
+          "transformation_notes": "Must match Axcess available State/Province options.",
+          "common_source_names": [
+            "billing_state",
+            "bill_state",
+            "billing_province",
+            "invoice_state"
+          ],
+          "example_values": [
+            "IL",
+            "GA"
+          ]
+        },
+        {
+          "field_name": "Billing Zip/Postal Code",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "ZIP or postal code of the billing address",
+          "transformation_notes": "Format as string. Same rules as Client Zip.",
+          "common_source_names": [
+            "billing_zip",
+            "bill_zip",
+            "billing_postal",
+            "invoice_zip"
+          ],
+          "example_values": [
+            "60601",
+            "30301-0001"
+          ]
+        },
+        {
+          "field_name": "Billing Country",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Country options"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Country component of the billing address",
+          "transformation_notes": "Must match Axcess available Country options.",
+          "common_source_names": [
+            "billing_country",
+            "bill_country",
+            "invoice_country"
+          ],
+          "example_values": [
+            "USA"
+          ]
+        },
+        {
+          "field_name": "Billable (Y/N)",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Y",
+            "N"
+          ],
+          "description": "Flag indicating whether this client is eligible for billing \u2014 controls WIP and invoice generation",
+          "transformation_notes": "Map to 'Y' or 'N'. Source values like true/false, 1/0, 'Yes'/'No', 'Billable'/'Non-billable' all map here. Default to 'Y' if source has no equivalent field.",
+          "common_source_names": [
+            "billable",
+            "is_billable",
+            "billable_flag",
+            "chargeable",
+            "billable_yn"
+          ],
+          "example_values": [
+            "Y",
+            "N"
+          ]
+        },
+        {
+          "field_name": "Finance Charge",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Finance charge configuration or rate applied to overdue AR balances",
+          "transformation_notes": "Typically a rate or type identifier. Source may store as percentage or reference to a charge schedule.",
+          "common_source_names": [
+            "finance_charge",
+            "late_fee",
+            "interest_rate",
+            "penalty_rate",
+            "finance_charge_rate"
+          ],
+          "example_values": [
+            "1.5%",
+            "Standard"
+          ]
+        },
+        {
+          "field_name": "Active Date",
+          "field_type": "date",
+          "required": true,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Date the client became active in the system \u2014 required for all client records",
+          "transformation_notes": "Convert to MM/DD/YYYY format. If source lacks an explicit active date, use the earliest transaction date or engagement start date. Cannot be null.",
+          "common_source_names": [
+            "active_date",
+            "start_date",
+            "open_date",
+            "created_date",
+            "inception_date",
+            "engagement_start",
+            "client_since",
+            "date_added"
+          ],
+          "example_values": [
+            "01/01/2020",
+            "07/15/2018"
+          ]
+        },
+        {
+          "field_name": "Inactive Date",
+          "field_type": "date",
+          "required": false,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Date the client was deactivated \u2014 only for Inactive or On Hold clients",
+          "transformation_notes": "Convert to MM/DD/YYYY format. Leave blank for Active clients. If source has a closed/terminated date, use that.",
+          "common_source_names": [
+            "inactive_date",
+            "end_date",
+            "close_date",
+            "termination_date",
+            "closed_date",
+            "deactivation_date"
+          ],
+          "example_values": [
+            "12/31/2024",
+            "06/30/2023"
+          ]
+        },
+        {
+          "field_name": "Phone 1",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Primary phone number \u2014 type auto-assigned based on client entity type (Business for entities, Home for individuals)",
+          "transformation_notes": "Normalize to consistent format. Phone type is auto-determined: Business clients -> Business Phone, Individual clients -> Home Phone. Strip extensions into separate handling if needed.",
+          "common_source_names": [
+            "phone",
+            "phone1",
+            "phone_number",
+            "primary_phone",
+            "telephone",
+            "main_phone",
+            "business_phone",
+            "home_phone",
+            "tel"
+          ],
+          "example_values": [
+            "(919) 555-1234",
+            "212-555-0100",
+            "8005551234"
+          ]
+        },
+        {
+          "field_name": "Phone 2",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Secondary phone number",
+          "transformation_notes": "Same format rules as Phone 1. Typically a secondary contact number.",
+          "common_source_names": [
+            "phone2",
+            "alt_phone",
+            "secondary_phone",
+            "other_phone",
+            "mobile",
+            "cell_phone"
+          ],
+          "example_values": [
+            "(919) 555-5678"
+          ]
+        },
+        {
+          "field_name": "Phone 3",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Tertiary phone number",
+          "transformation_notes": "Same format rules as Phone 1. Rarely populated.",
+          "common_source_names": [
+            "phone3",
+            "phone_3",
+            "third_phone"
+          ],
+          "example_values": []
+        },
+        {
+          "field_name": "Fax",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client fax number",
+          "transformation_notes": "Standard phone format. Fax numbers are declining in usage \u2014 may be blank for many modern clients.",
+          "common_source_names": [
+            "fax",
+            "fax_number",
+            "fax_phone",
+            "facsimile"
+          ],
+          "example_values": [
+            "(919) 555-9999"
+          ]
+        },
+        {
+          "field_name": "Email",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "email",
+          "enum": null,
+          "description": "Primary client email address \u2014 single address only",
+          "transformation_notes": "Must be a single valid email address. If source has multiple emails, use the primary/business email. Strip whitespace. Axcess does not allow non-email text in this field.",
+          "common_source_names": [
+            "email",
+            "email_address",
+            "primary_email",
+            "client_email",
+            "e_mail",
+            "contact_email",
+            "business_email"
+          ],
+          "example_values": [
+            "jsmith@example.com",
+            "info@acmecorp.com"
+          ]
+        },
+        {
+          "field_name": "Web Address",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client website URL",
+          "transformation_notes": "Optional. Include protocol prefix if available (https://). Free-text URL field.",
+          "common_source_names": [
+            "web_address",
+            "website",
+            "url",
+            "web_url",
+            "homepage",
+            "web_site",
+            "company_url"
+          ],
+          "example_values": [
+            "https://www.acmecorp.com",
+            "www.smithcpa.com"
+          ]
+        },
+        {
+          "field_name": "Principal / Master (Y/N)",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Y",
+            "N"
+          ],
+          "description": "Flag indicating whether this is the principal/master record in a client family or group",
+          "transformation_notes": "Map to 'Y' or 'N'. In multi-entity client families, the parent/master record is 'Y', sub-clients are 'N'. If source has no hierarchy concept, default to 'Y'.",
+          "common_source_names": [
+            "principal",
+            "master",
+            "is_master",
+            "is_principal",
+            "parent_flag",
+            "master_flag",
+            "primary_record"
+          ],
+          "example_values": [
+            "Y",
+            "N"
+          ]
+        },
+        {
+          "field_name": "CRS1",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 1 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS1 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs1",
+            "partner",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "partner_id"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS2",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 2 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS2 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs2",
+            "manager",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_2"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS3",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 3 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS3 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs3",
+            "reviewer",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_3"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS4",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 4 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS4 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs4",
+            "staff_role_4",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_4"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS5",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 5 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS5 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs5",
+            "staff_role_5",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_5"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS6",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 6 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS6 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs6",
+            "staff_role_6",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_6"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        },
+        {
+          "field_name": "CRS7",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "foreign_key": "Staff ID setup in Axcess"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Client Responsible Staff role 7 \u2014 references a Staff ID configured in Axcess (e.g., Primary Partner, Manager, Tax Reviewer)",
+          "transformation_notes": "Must match a Staff ID in Axcess setup. Provide CRS mapping in Checklist File. Map source staff assignments (partner, manager, reviewer) to Axcess staff IDs. CRS role definitions (what role CRS7 represents) are configured at the firm level.",
+          "common_source_names": [
+            "crs7",
+            "staff_role_7",
+            "responsible_staff",
+            "assigned_staff",
+            "staff_id",
+            "crs_7"
+          ],
+          "example_values": [
+            "JSMITH",
+            "PJONES",
+            "STAFF001"
+          ]
+        }
+      ]
+    },
+    "AR": {
+      "description": "Accounts receivable transactions",
+      "sheet_name": "AR",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub-ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier linking this AR transaction to the client record",
+          "transformation_notes": "Must match a Client ID in the Client entity. Same formatting rules (Text, leading zeros).",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "client_number",
+            "account_id",
+            "customer_id"
+          ],
+          "example_values": [
+            "000012345",
+            "SMITH001"
+          ]
+        },
+        {
+          "field_name": "Client Sub-ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier for AR transactions \u2014 links to a specific sub-engagement",
+          "transformation_notes": "Must match Client Sub-ID in Client entity. Required field in template even if blank.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client",
+            "sub_account",
+            "matter_id"
+          ],
+          "example_values": [
+            "001",
+            "TAX"
+          ]
+        },
+        {
+          "field_name": "ARType",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Invoice",
+            "Payment",
+            "Credit",
+            "Debit",
+            "Writeoff",
+            "Finance Charge"
+          ],
+          "description": "Type classification for the AR transaction \u2014 determines how the transaction affects client balances",
+          "transformation_notes": "Map source transaction types to CCH enum. Common mappings: 'INV'/'Bill' -> 'Invoice', 'PMT'/'Receipt' -> 'Payment', 'CM'/'Credit Memo' -> 'Credit', 'DM' -> 'Debit', 'WO' -> 'Writeoff', 'FC'/'Late Fee' -> 'Finance Charge'.",
+          "common_source_names": [
+            "ar_type",
+            "transaction_type",
+            "trans_type",
+            "type",
+            "ar_transaction_type",
+            "entry_type",
+            "tran_type"
+          ],
+          "example_values": [
+            "Invoice",
+            "Payment",
+            "Credit",
+            "Writeoff"
+          ]
+        },
+        {
+          "field_name": "Check Number",
+          "field_type": "int",
+          "required": true,
+          "constraints": {
+            "regex": "^\\d+$"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Check or payment reference number \u2014 numeric identifier for the payment instrument",
+          "transformation_notes": "Numeric only \u2014 strip any non-numeric characters. For electronic payments, use a reference number. Required even for non-payment types (use invoice number or sequence).",
+          "common_source_names": [
+            "check_number",
+            "check_no",
+            "check_num",
+            "reference_number",
+            "ref_no",
+            "payment_ref",
+            "check_id"
+          ],
+          "example_values": [
+            10001,
+            55432,
+            100
+          ]
+        },
+        {
+          "field_name": "Invoice Number",
+          "field_type": "int",
+          "required": true,
+          "constraints": {
+            "regex": "^\\d+$"
+          },
+          "format": null,
+          "enum": null,
+          "description": "Invoice number associated with this AR transaction \u2014 numeric only",
+          "transformation_notes": "Numeric only \u2014 strip prefixes like 'INV-' or 'I'. Must be a valid integer. Payments should reference the invoice they apply to.",
+          "common_source_names": [
+            "invoice_number",
+            "invoice_no",
+            "inv_number",
+            "inv_no",
+            "invoice_id",
+            "bill_number",
+            "invoice_num"
+          ],
+          "example_values": [
+            20001,
+            30045,
+            1
+          ]
+        },
+        {
+          "field_name": "TransDate",
+          "field_type": "date",
+          "required": true,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Transaction date \u2014 the effective date of the AR entry",
+          "transformation_notes": "Convert to MM/DD/YYYY. This is the primary date for the transaction, not the posting or check date.",
+          "common_source_names": [
+            "trans_date",
+            "transaction_date",
+            "date",
+            "entry_date",
+            "ar_date",
+            "tran_date"
+          ],
+          "example_values": [
+            "01/15/2025",
+            "12/31/2024"
+          ]
+        },
+        {
+          "field_name": "Chkdate",
+          "field_type": "date",
+          "required": false,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Check date \u2014 the date on the payment instrument. Required for Payment-type transactions",
+          "transformation_notes": "Convert to MM/DD/YYYY. Required when ARType is 'Payment'. For non-payment types, may be left blank.",
+          "common_source_names": [
+            "check_date",
+            "chk_date",
+            "payment_date",
+            "received_date"
+          ],
+          "example_values": [
+            "01/20/2025",
+            "02/01/2025"
+          ]
+        },
+        {
+          "field_name": "Postdate",
+          "field_type": "date",
+          "required": false,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Posting date \u2014 the date the transaction was posted to the ledger",
+          "transformation_notes": "Convert to MM/DD/YYYY. May differ from TransDate for accrual-based entries. If source has no separate post date, can mirror TransDate.",
+          "common_source_names": [
+            "post_date",
+            "posting_date",
+            "posted_date",
+            "gl_date"
+          ],
+          "example_values": [
+            "01/31/2025"
+          ]
+        },
+        {
+          "field_name": "Amount",
+          "field_type": "decimal",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Transaction amount \u2014 positive for invoices/debits, negative for payments/credits",
+          "transformation_notes": "Decimal value. Payments must be negative. If source stores payments as positive, negate them. Ensure sign conventions match: Invoice (+), Payment (-), Credit (-), Debit (+), Writeoff (-), Finance Charge (+).",
+          "common_source_names": [
+            "amount",
+            "total",
+            "transaction_amount",
+            "ar_amount",
+            "balance",
+            "invoice_amount",
+            "payment_amount",
+            "total_amount"
+          ],
+          "example_values": [
+            1500.0,
+            -750.0,
+            250.5
+          ]
+        },
+        {
+          "field_name": "Tax",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Tax amount included in or added to the AR transaction",
+          "transformation_notes": "Decimal value. If source does not break out tax separately, set to 0 or null.",
+          "common_source_names": [
+            "tax",
+            "tax_amount",
+            "sales_tax",
+            "vat",
+            "tax_total"
+          ],
+          "example_values": [
+            0.0,
+            112.5
+          ]
+        },
+        {
+          "field_name": "Finance Chg",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Finance charge amount assessed on overdue balance",
+          "transformation_notes": "Decimal value. Typically only populated for Finance Charge type transactions.",
+          "common_source_names": [
+            "finance_charge",
+            "finance_chg",
+            "late_fee",
+            "interest",
+            "penalty"
+          ],
+          "example_values": [
+            25.0,
+            50.0
+          ]
+        },
+        {
+          "field_name": "Progress Amt",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Progress billing amount \u2014 partial billing on an engagement before completion",
+          "transformation_notes": "Decimal value. Used for progress/retainer billing models. If source doesn't support progress billing, leave null.",
+          "common_source_names": [
+            "progress_amount",
+            "progress_amt",
+            "retainer",
+            "advance_billing",
+            "interim_billing"
+          ],
+          "example_values": [
+            5000.0
+          ]
+        },
+        {
+          "field_name": "Applied Progress",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Amount of progress billing that has been applied against final invoices",
+          "transformation_notes": "Decimal value. Tracks how much of the progress/retainer has been consumed. If not tracked separately in source, leave null.",
+          "common_source_names": [
+            "applied_progress",
+            "progress_applied",
+            "retainer_applied",
+            "applied_retainer"
+          ],
+          "example_values": [
+            2500.0
+          ]
+        }
+      ]
+    },
+    "WIP": {
+      "description": "Work-in-progress time and expense entries",
+      "sheet_name": "WIP",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub-ID",
+          "references": "Client.Client Sub-ID"
+        },
+        {
+          "field": "Staff ID",
+          "references": "Staff (external to template)"
+        },
+        {
+          "field": "Service Code",
+          "references": "Service Code (external to template)"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier linking this WIP entry to the client record",
+          "transformation_notes": "Must match a Client ID in the Client entity.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "client_number",
+            "account_id",
+            "customer_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub-ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier for WIP transactions",
+          "transformation_notes": "Must match Client Sub-ID in Client entity if used.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client",
+            "matter_id",
+            "engagement_id"
+          ],
+          "example_values": [
+            "001"
+          ]
+        },
+        {
+          "field_name": "TranDate",
+          "field_type": "date",
+          "required": true,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Transaction date of the time or expense entry",
+          "transformation_notes": "Convert to MM/DD/YYYY. The date the work was performed or expense incurred.",
+          "common_source_names": [
+            "tran_date",
+            "trans_date",
+            "work_date",
+            "entry_date",
+            "date",
+            "time_date",
+            "activity_date"
+          ],
+          "example_values": [
+            "03/15/2025"
+          ]
+        },
+        {
+          "field_name": "Staff ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Identifier of the staff member who performed the work \u2014 references Staff setup in Axcess",
+          "transformation_notes": "Old source codes accepted if a mapping table is provided to the Axcess setup team. Map source employee/staff identifiers to Axcess Staff IDs.",
+          "common_source_names": [
+            "staff_id",
+            "employee_id",
+            "emp_id",
+            "worker_id",
+            "timekeeper_id",
+            "user_id",
+            "staff_code",
+            "employee_code",
+            "originator"
+          ],
+          "example_values": [
+            "JSMITH",
+            "EMP001",
+            "1042"
+          ]
+        },
+        {
+          "field_name": "Service Code",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Service/activity code classifying the type of work performed \u2014 references Service Code setup in Axcess",
+          "transformation_notes": "Old source codes accepted if a mapping table is provided. Map source activity/task/service codes to Axcess Service Codes.",
+          "common_source_names": [
+            "service_code",
+            "activity_code",
+            "task_code",
+            "work_code",
+            "charge_code",
+            "billing_code",
+            "time_code",
+            "service_id"
+          ],
+          "example_values": [
+            "TAX1040",
+            "AUDIT",
+            "CONSULT",
+            "BK-MONTHLY"
+          ]
+        },
+        {
+          "field_name": "Billable/Non-billable",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Y",
+            "N"
+          ],
+          "description": "Flag indicating whether this WIP entry is billable to the client",
+          "transformation_notes": "Map to 'Y' (billable) or 'N' (non-billable). Source values like true/false, 1/0, 'B'/'NB', 'Chargeable'/'Non-chargeable' all map here.",
+          "common_source_names": [
+            "billable",
+            "is_billable",
+            "billable_flag",
+            "chargeable",
+            "bill_status",
+            "billable_yn"
+          ],
+          "example_values": [
+            "Y",
+            "N"
+          ]
+        },
+        {
+          "field_name": "Hours",
+          "field_type": "decimal",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Number of hours worked for time entries",
+          "transformation_notes": "Decimal value (e.g., 1.5 for 1 hour 30 minutes). If source stores in minutes, divide by 60. For expense entries, hours may be 0.",
+          "common_source_names": [
+            "hours",
+            "time",
+            "worked_hours",
+            "quantity",
+            "duration",
+            "total_hours",
+            "units_time"
+          ],
+          "example_values": [
+            2.5,
+            0.75,
+            8.0
+          ]
+        },
+        {
+          "field_name": "Fees",
+          "field_type": "decimal",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Fee amount for the WIP entry \u2014 the billable dollar value of the work",
+          "transformation_notes": "Decimal value. For time entries: typically Hours \u00d7 Rate. Optional if non-billable. If source stores fees separately from hours\u00d7rate, use the fee amount.",
+          "common_source_names": [
+            "fees",
+            "fee",
+            "amount",
+            "charge",
+            "billable_amount",
+            "time_value",
+            "fee_amount",
+            "total_fee"
+          ],
+          "example_values": [
+            375.0,
+            1200.0
+          ]
+        },
+        {
+          "field_name": "Expenses",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Expense amount for cost-type WIP entries (e.g., filing fees, postage)",
+          "transformation_notes": "Decimal value. Used for non-time charges like filing fees, copies, postage. Separate from fee-based time entries.",
+          "common_source_names": [
+            "expenses",
+            "expense",
+            "cost",
+            "disbursement",
+            "reimbursable",
+            "expense_amount",
+            "hard_cost"
+          ],
+          "example_values": [
+            50.0,
+            125.0
+          ]
+        },
+        {
+          "field_name": "Rate",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Billing rate per hour for the staff member on this entry",
+          "transformation_notes": "Decimal value. If source tracks standard vs. actual rate, use the rate that was actually applied. Optional field.",
+          "common_source_names": [
+            "rate",
+            "billing_rate",
+            "hourly_rate",
+            "bill_rate",
+            "charge_rate",
+            "std_rate"
+          ],
+          "example_values": [
+            150.0,
+            250.0,
+            450.0
+          ]
+        },
+        {
+          "field_name": "Cost",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Internal cost amount for the WIP entry \u2014 used for profitability analysis",
+          "transformation_notes": "Decimal value. Typically Hours \u00d7 Staff Cost Rate. If source doesn't track cost rates, may be null.",
+          "common_source_names": [
+            "cost",
+            "cost_amount",
+            "internal_cost",
+            "cost_rate",
+            "actual_cost"
+          ],
+          "example_values": [
+            100.0,
+            75.0
+          ]
+        },
+        {
+          "field_name": "Units",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Unit quantity for expense-type entries (e.g., number of copies, miles)",
+          "transformation_notes": "Decimal value. Expenses only \u2014 tracks the quantity of the expense item. For time entries, use Hours instead.",
+          "common_source_names": [
+            "units",
+            "quantity",
+            "qty",
+            "unit_count",
+            "expense_units"
+          ],
+          "example_values": [
+            100,
+            50.5
+          ]
+        },
+        {
+          "field_name": "Memo",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Free-text description of the work performed or expense incurred",
+          "transformation_notes": "Free-text. Truncate if source memo exceeds Axcess field length. Preserve meaningful work descriptions for client-facing invoices.",
+          "common_source_names": [
+            "memo",
+            "description",
+            "narrative",
+            "notes",
+            "work_description",
+            "time_description",
+            "activity_description",
+            "comment"
+          ],
+          "example_values": [
+            "Prepared Form 1040, reviewed with client",
+            "Filing fee - NC Secretary of State"
+          ]
+        },
+        {
+          "field_name": "Billed Amount",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Amount that was actually billed for this WIP entry \u2014 required if converting historical data",
+          "transformation_notes": "Decimal value. Required if the conversion includes historical billed data. Note: Mango, Onvio, and QuickBooks do not offer history export \u2014 this field will be empty for those sources.",
+          "common_source_names": [
+            "billed_amount",
+            "billed",
+            "invoiced_amount",
+            "billed_total",
+            "amount_billed"
+          ],
+          "example_values": [
+            375.0,
+            1200.0
+          ]
+        },
+        {
+          "field_name": "Progress",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Progress billing amount applied to this WIP entry",
+          "transformation_notes": "Decimal value. For progress/retainer billing. If source doesn't track progress billing at the WIP level, leave null.",
+          "common_source_names": [
+            "progress",
+            "progress_billing",
+            "retainer_applied",
+            "interim_amount"
+          ],
+          "example_values": [
+            500.0
+          ]
+        },
+        {
+          "field_name": "Surcharge (if any)",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Surcharge amount added to the WIP entry (e.g., technology surcharge)",
+          "transformation_notes": "Decimal value. Optional. Only populate if source tracks surcharges at the transaction level.",
+          "common_source_names": [
+            "surcharge",
+            "surcharge_amount",
+            "tech_fee",
+            "admin_fee",
+            "additional_charge"
+          ],
+          "example_values": [
+            25.0,
+            10.0
+          ]
+        },
+        {
+          "field_name": "Write-up/down",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Write-up or write-down adjustment amount on the WIP entry",
+          "transformation_notes": "Decimal value. Positive for write-ups, negative for write-downs. Captures billing adjustments from standard fees.",
+          "common_source_names": [
+            "write_up_down",
+            "adjustment",
+            "write_off",
+            "write_down",
+            "write_up",
+            "billing_adjustment",
+            "fee_adjustment"
+          ],
+          "example_values": [
+            50.0,
+            -100.0
+          ]
+        },
+        {
+          "field_name": "Invoice Number",
+          "field_type": "int",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Invoice number this WIP entry was billed on \u2014 links WIP to AR",
+          "transformation_notes": "Integer. Only populated for billed WIP entries. Must match an Invoice Number in the AR entity if cross-referencing.",
+          "common_source_names": [
+            "invoice_number",
+            "invoice_no",
+            "inv_number",
+            "bill_number"
+          ],
+          "example_values": [
+            20001,
+            30045
+          ]
+        },
+        {
+          "field_name": "Invoice Date",
+          "field_type": "date",
+          "required": false,
+          "constraints": null,
+          "format": "MM/DD/YYYY",
+          "enum": null,
+          "description": "Date the WIP entry was invoiced",
+          "transformation_notes": "Convert to MM/DD/YYYY. Only populated for billed WIP entries.",
+          "common_source_names": [
+            "invoice_date",
+            "bill_date",
+            "billed_date",
+            "inv_date"
+          ],
+          "example_values": [
+            "01/31/2025",
+            "03/15/2025"
+          ]
+        }
+      ]
+    },
+    "Contacts (CCIU)": {
+      "description": "Client contact records with multi-client assignment support",
+      "sheet_name": "Contacts (CCIU)",
+      "primary_key": null,
+      "deduplication_key": [
+        "First Name",
+        "Middle Name",
+        "Last Name",
+        "Honorific",
+        "Suffix"
+      ],
+      "foreign_keys": [
+        {
+          "field": "Originating Client ID",
+          "references": "Client.Client ID (with optional .Sub-ID)"
+        },
+        {
+          "field": "Client Assignments",
+          "references": "Client.Client ID (multiple)"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Originating Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client ID that originally owns this contact record \u2014 supports Sub-ID notation (e.g., 1584.123)",
+          "transformation_notes": "Format: Client ID alone or Client ID.Sub-ID (dot-separated). Must reference an existing Client ID in the Client entity.",
+          "common_source_names": [
+            "client_id",
+            "parent_client",
+            "originating_client",
+            "primary_client_id",
+            "owner_client_id"
+          ],
+          "example_values": [
+            "123456",
+            "1584.123"
+          ]
+        },
+        {
+          "field_name": "First Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact's first/given name",
+          "transformation_notes": "Trim whitespace. Title case preferred. Part of deduplication key with Middle Name, Last Name, Honorific, Suffix.",
+          "common_source_names": [
+            "first_name",
+            "fname",
+            "given_name",
+            "first"
+          ],
+          "example_values": [
+            "John",
+            "Mary",
+            "Robert"
+          ]
+        },
+        {
+          "field_name": "Last Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact's last/family name",
+          "transformation_notes": "Trim whitespace. Part of deduplication key.",
+          "common_source_names": [
+            "last_name",
+            "lname",
+            "surname",
+            "family_name",
+            "last"
+          ],
+          "example_values": [
+            "Smith",
+            "Johnson",
+            "O'Brien"
+          ]
+        },
+        {
+          "field_name": "Client Assignments",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "Comma-separated, double-quoted list of Client IDs",
+          "enum": null,
+          "description": "Comma-separated list of Client IDs this contact is assigned to \u2014 enables multi-client contact sharing",
+          "transformation_notes": "Format: double-quoted, comma-separated Client IDs. Example: \"123456\",\"789012\". Deduplication checks against first, middle, last name, honorific, and suffix.",
+          "common_source_names": [
+            "assigned_clients",
+            "client_assignments",
+            "client_list",
+            "related_clients"
+          ],
+          "example_values": [
+            "\"123456\",\"789012\"",
+            "\"SMITH001\""
+          ]
+        },
+        {
+          "field_name": "Honorific",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Title prefix (e.g., Mr., Mrs., Dr.) \u2014 part of deduplication key",
+          "transformation_notes": "Standard honorific abbreviations. Part of contact dedup key.",
+          "common_source_names": [
+            "honorific",
+            "title",
+            "prefix",
+            "salutation_prefix",
+            "mr_mrs"
+          ],
+          "example_values": [
+            "Mr.",
+            "Mrs.",
+            "Dr.",
+            "Ms."
+          ]
+        },
+        {
+          "field_name": "Suffix",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Name suffix (e.g., Jr., III, Esq.) \u2014 part of deduplication key",
+          "transformation_notes": "Standard suffix abbreviations. Part of contact dedup key.",
+          "common_source_names": [
+            "suffix",
+            "name_suffix",
+            "jr_sr",
+            "generational"
+          ],
+          "example_values": [
+            "Jr.",
+            "III",
+            "Esq.",
+            "CPA"
+          ]
+        },
+        {
+          "field_name": "Middle Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact's middle name or initial \u2014 part of deduplication key",
+          "transformation_notes": "Can be full middle name or initial. Part of contact dedup key.",
+          "common_source_names": [
+            "middle_name",
+            "mname",
+            "middle_initial",
+            "mi",
+            "middle"
+          ],
+          "example_values": [
+            "Allen",
+            "M",
+            "Marie"
+          ]
+        },
+        {
+          "field_name": "Firm Category",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Category classification for the contact within the firm's taxonomy",
+          "transformation_notes": "Free-text. Map source contact categories if they exist.",
+          "common_source_names": [
+            "firm_category",
+            "contact_category",
+            "category",
+            "contact_type",
+            "role_category"
+          ],
+          "example_values": [
+            "Officer",
+            "Shareholder",
+            "Board Member"
+          ]
+        },
+        {
+          "field_name": "Salutation",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "max_length": 64
+          },
+          "format": null,
+          "enum": null,
+          "description": "Correspondence greeting for the contact (max 64 characters)",
+          "transformation_notes": "Max 64 characters. If source lacks salutation, can be derived from name fields.",
+          "common_source_names": [
+            "salutation",
+            "greeting",
+            "dear_line"
+          ],
+          "example_values": [
+            "Dear John",
+            "Dear Mr. Smith"
+          ]
+        },
+        {
+          "field_name": "Job Title",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "max_length": 50
+          },
+          "format": null,
+          "enum": null,
+          "description": "Contact's professional title or position (max 50 characters)",
+          "transformation_notes": "Max 50 characters. Truncate if source exceeds limit.",
+          "common_source_names": [
+            "job_title",
+            "title",
+            "position",
+            "role",
+            "designation"
+          ],
+          "example_values": [
+            "CEO",
+            "Controller",
+            "Managing Partner"
+          ]
+        },
+        {
+          "field_name": "Email Types",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Email Types"
+          },
+          "format": "email",
+          "enum": null,
+          "description": "Comma-separated list of email type classifications matching Axcess picklist",
+          "transformation_notes": "Must match Axcess available Email Types. Comma-separated, positionally paired with Emails field.",
+          "common_source_names": [
+            "email_types",
+            "email_type",
+            "email_category"
+          ],
+          "example_values": [
+            "Business,Home",
+            "Business"
+          ]
+        },
+        {
+          "field_name": "Emails",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "email",
+          "enum": null,
+          "description": "Comma-separated list of email addresses \u2014 positionally paired with Email Types",
+          "transformation_notes": "Must be valid email addresses only \u2014 Axcess rejects non-email text. Comma-separated, one per Email Type.",
+          "common_source_names": [
+            "emails",
+            "email_addresses",
+            "email_list",
+            "contact_emails"
+          ],
+          "example_values": [
+            "jsmith@work.com,john@home.com",
+            "cfo@acme.com"
+          ]
+        },
+        {
+          "field_name": "Phones Same As Client (T/F)",
+          "field_type": "boolean",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Flag indicating contact shares the same phone numbers as the client record",
+          "transformation_notes": "Boolean T/F. If true, phone fields are inherited from client record.",
+          "common_source_names": [
+            "phones_same_as_client",
+            "use_client_phone",
+            "same_phone"
+          ],
+          "example_values": [
+            "T",
+            "F"
+          ]
+        },
+        {
+          "field_name": "Phone Types",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Phone Types"
+          },
+          "format": "Comma-separated list of Axcess phone types",
+          "enum": null,
+          "description": "Comma-separated list of phone type classifications matching Axcess picklist",
+          "transformation_notes": "Must match Axcess available Phone Types. Positionally paired with Phones field.",
+          "common_source_names": [
+            "phone_types",
+            "phone_type",
+            "phone_category"
+          ],
+          "example_values": [
+            "Business,Mobile",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Phones",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "Comma-separated phone numbers",
+          "enum": null,
+          "description": "Comma-separated phone numbers \u2014 positionally paired with Phone Types",
+          "transformation_notes": "Supported formats: USA 1234567890x123, 234-567-8900, (123) 456-7890x000. Comma-separated.",
+          "common_source_names": [
+            "phones",
+            "phone_numbers",
+            "contact_phones",
+            "phone_list"
+          ],
+          "example_values": [
+            "(919) 555-1234,(919) 555-5678",
+            "212-555-0100"
+          ]
+        },
+        {
+          "field_name": "Addresses Same As Client (T/F)",
+          "field_type": "boolean",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Flag indicating contact shares the same address as the client record",
+          "transformation_notes": "Boolean T/F. If true, address fields are inherited from client record.",
+          "common_source_names": [
+            "addresses_same_as_client",
+            "use_client_address",
+            "same_address"
+          ],
+          "example_values": [
+            "T",
+            "F"
+          ]
+        },
+        {
+          "field_name": "Address Types",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available Address Types"
+          },
+          "format": "Comma-separated list of Axcess address types",
+          "enum": null,
+          "description": "Comma-separated list of address type classifications matching Axcess picklist",
+          "transformation_notes": "Must match Axcess available Address Types. Positionally paired with Addresses field.",
+          "common_source_names": [
+            "address_types",
+            "address_type",
+            "addr_type"
+          ],
+          "example_values": [
+            "Business,Home",
+            "Business"
+          ]
+        },
+        {
+          "field_name": "Addresses",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "Colon-delimited: AddrL1:AddrL2:AddrL3:AptOrSuite:City:StateOrRegion:PostalCode:CountryCode:PrimaryAddress:PrimaryMailingAddress",
+          "enum": null,
+          "description": "Colon-delimited address blocks \u2014 complex multi-field format with positional segments",
+          "transformation_notes": "Format: AddrL1:AddrL2:AddrL3:AptOrSuite:City:StateOrRegion:PostalCode:CountryCode:PrimaryAddress:PrimaryMailingAddress. If any segment contains a comma, wrap in double quotes. Multiple addresses comma-separated.",
+          "common_source_names": [
+            "addresses",
+            "address_list",
+            "contact_addresses",
+            "full_address"
+          ],
+          "example_values": [
+            "123 Main St:::Suite 100:Raleigh:NC:27601:USA:T:T"
+          ]
+        },
+        {
+          "field_name": "Instant Messenger Types",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available IM Types"
+          },
+          "format": "Comma-separated list of Axcess IM types",
+          "enum": null,
+          "description": "Comma-separated list of IM type classifications matching Axcess picklist",
+          "transformation_notes": "Must match Axcess available IM Types. Positionally paired with Instant Messengers and Providers.",
+          "common_source_names": [
+            "im_types",
+            "messenger_types",
+            "im_type"
+          ],
+          "example_values": [
+            "Business,Home"
+          ]
+        },
+        {
+          "field_name": "Instant Messengers",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "Comma-separated profile names",
+          "enum": null,
+          "description": "Comma-separated IM profile names/handles",
+          "transformation_notes": "Positionally paired with IM Types and Providers. Free-text usernames.",
+          "common_source_names": [
+            "instant_messengers",
+            "im_handles",
+            "messenger_ids",
+            "im_usernames"
+          ],
+          "example_values": [
+            "jsmith_work,john.smith"
+          ]
+        },
+        {
+          "field_name": "Instant Messenger Providers",
+          "field_type": "string",
+          "required": false,
+          "constraints": {
+            "restrict_to": "Axcess available IM Providers"
+          },
+          "format": "Comma-separated provider names",
+          "enum": null,
+          "description": "Comma-separated IM provider names matching Axcess picklist \u2014 required if IM profiles are provided",
+          "transformation_notes": "Must match Axcess available IM Providers. Required whenever Instant Messengers field is populated.",
+          "common_source_names": [
+            "im_providers",
+            "messenger_providers",
+            "im_provider"
+          ],
+          "example_values": [
+            "Skype,Teams"
+          ]
+        }
+      ]
+    },
+    "Client Billing General Info": {
+      "description": "Billing configuration per client \u2014 controls invoicing, surcharges, limits",
+      "sheet_name": "Client Billing General Info",
+      "primary_key": [
+        "Client ID",
+        "Client Sub ID"
+      ],
+      "foreign_keys": [
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier for billing configuration",
+          "transformation_notes": "Must match Client entity. Same formatting rules.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier for billing configuration",
+          "transformation_notes": "Must match Client entity if used.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client"
+          ],
+          "example_values": [
+            "001"
+          ]
+        },
+        {
+          "field_name": "Is Billable",
+          "field_type": "boolean",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this client/sub-client is eligible for billing",
+          "transformation_notes": "Boolean: 'True' or 'False'. Maps from source billable flags.",
+          "common_source_names": [
+            "is_billable",
+            "billable",
+            "billable_flag"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Should Print AR Statements",
+          "field_type": "boolean",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether AR statements should be printed for this client",
+          "transformation_notes": "Boolean: 'True' or 'False'.",
+          "common_source_names": [
+            "print_statements",
+            "ar_statements",
+            "statement_flag"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Should Calculate Surcharges",
+          "field_type": "boolean",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether surcharges should be auto-calculated for this client",
+          "transformation_notes": "Boolean: 'True' or 'False'.",
+          "common_source_names": [
+            "calculate_surcharges",
+            "surcharge_flag",
+            "apply_surcharge"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Finance Charge Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Named finance charge schedule applied to this client's overdue balances",
+          "transformation_notes": "Must match a Finance Charge Type name configured in Axcess.",
+          "common_source_names": [
+            "finance_charge_type",
+            "late_fee_schedule",
+            "interest_schedule"
+          ],
+          "example_values": [
+            "Standard 1.5%",
+            "Premium"
+          ]
+        },
+        {
+          "field_name": "Language Code",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Language code for client-facing documents and correspondence",
+          "transformation_notes": "Language code per Axcess options. Default to English if source has no equivalent.",
+          "common_source_names": [
+            "language_code",
+            "language",
+            "lang",
+            "locale"
+          ],
+          "example_values": [
+            "EN",
+            "ES",
+            "FR"
+          ]
+        },
+        {
+          "field_name": "Default Invoice Template",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Name of the invoice template to use for this client",
+          "transformation_notes": "Must match an Invoice Template name configured in Axcess.",
+          "common_source_names": [
+            "invoice_template",
+            "template",
+            "bill_template",
+            "invoice_format"
+          ],
+          "example_values": [
+            "Standard Invoice",
+            "Detailed with Hours"
+          ]
+        },
+        {
+          "field_name": "Billing Sort Code",
+          "field_type": "int",
+          "required": false,
+          "constraints": {
+            "min": 1,
+            "max": 99
+          },
+          "format": null,
+          "enum": null,
+          "description": "Numeric sort code (1-99) controlling the order of billing entries",
+          "transformation_notes": "Integer 1-99. Controls sort order on invoices and billing reports.",
+          "common_source_names": [
+            "billing_sort",
+            "sort_code",
+            "sort_order",
+            "bill_sort"
+          ],
+          "example_values": [
+            1,
+            10,
+            50
+          ]
+        },
+        {
+          "field_name": "AR Limit",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Maximum AR balance threshold \u2014 triggers alerts when exceeded",
+          "transformation_notes": "Decimal value. Optional credit limit on outstanding AR.",
+          "common_source_names": [
+            "ar_limit",
+            "credit_limit",
+            "ar_threshold",
+            "balance_limit"
+          ],
+          "example_values": [
+            50000.0,
+            10000.0
+          ]
+        },
+        {
+          "field_name": "WIP Limit",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Maximum WIP balance threshold \u2014 triggers alerts when exceeded",
+          "transformation_notes": "Decimal value. Optional cap on unbilled WIP.",
+          "common_source_names": [
+            "wip_limit",
+            "wip_threshold",
+            "wip_cap",
+            "unbilled_limit"
+          ],
+          "example_values": [
+            25000.0
+          ]
+        },
+        {
+          "field_name": "Write Down Limit",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Maximum write-down amount allowed before requiring approval",
+          "transformation_notes": "Decimal value. Controls authorization thresholds for fee write-downs.",
+          "common_source_names": [
+            "write_down_limit",
+            "writedown_limit",
+            "adjustment_limit",
+            "discount_limit"
+          ],
+          "example_values": [
+            5000.0
+          ]
+        },
+        {
+          "field_name": "WIP Reserve Amount",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "WIP reserve balance \u2014 amount set aside against potential unbilled write-offs",
+          "transformation_notes": "Decimal value. Accounting reserve against WIP.",
+          "common_source_names": [
+            "wip_reserve",
+            "reserve_amount",
+            "wip_reserve_amount"
+          ],
+          "example_values": [
+            1000.0
+          ]
+        },
+        {
+          "field_name": "Billing Fee",
+          "field_type": "decimal",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Fixed or recurring billing fee amount for the client",
+          "transformation_notes": "Decimal value. Used for flat-fee or recurring billing arrangements.",
+          "common_source_names": [
+            "billing_fee",
+            "flat_fee",
+            "fixed_fee",
+            "recurring_fee",
+            "retainer_amount"
+          ],
+          "example_values": [
+            500.0,
+            2500.0
+          ]
+        }
+      ]
+    },
+    "Address Invoice and Statements": {
+      "description": "Invoice and statement delivery routing \u2014 controls who receives paper/email and at which address",
+      "sheet_name": "Address Invoice and Statements",
+      "primary_key": [
+        "Client ID.Client Sub ID"
+      ],
+      "foreign_keys": [
+        {
+          "field": "Client ID.Client Sub ID",
+          "references": "Client.Client ID + Client.Client Sub-ID"
+        },
+        {
+          "field": "Invoice Client Contact First Name + Last Name",
+          "references": "Contacts (CCIU).First Name + Last Name"
+        },
+        {
+          "field": "Statement Client Contact First Name + Last Name",
+          "references": "Contacts (CCIU).First Name + Last Name"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID.Client Sub ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": "Without Sub: 123456. With Sub: 123456.789",
+          "enum": null,
+          "description": "Combined client identifier in dot notation \u2014 Client ID alone or Client ID.Sub-ID",
+          "transformation_notes": "Format: without sub = '123456', with sub = '123456.789'. Must reference existing Client entity records.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id",
+            "client_sub_id"
+          ],
+          "example_values": [
+            "123456",
+            "123456.789"
+          ]
+        },
+        {
+          "field_name": "Use Contact as Invoice Recipient",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether to use a specific contact (vs. the client record) as the invoice recipient",
+          "transformation_notes": "Boolean: 'True' or 'False'. If True, Invoice Client Contact First/Last Name fields identify the recipient. If False, invoices go to the client record address.",
+          "common_source_names": [
+            "use_contact_invoice",
+            "invoice_to_contact",
+            "contact_invoice_flag"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Invoice Client Contact First Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "First name of the contact designated as invoice recipient \u2014 references Contacts (CCIU)",
+          "transformation_notes": "Must match a contact's First Name in Contacts (CCIU) entity. Only required when 'Use Contact as Invoice Recipient' is True.",
+          "common_source_names": [
+            "invoice_contact_first",
+            "inv_contact_fname",
+            "bill_to_first_name"
+          ],
+          "example_values": [
+            "John",
+            "Mary"
+          ]
+        },
+        {
+          "field_name": "Invoice Client Contact Last Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Last name of the contact designated as invoice recipient \u2014 references Contacts (CCIU)",
+          "transformation_notes": "Must match a contact's Last Name in Contacts (CCIU) entity. Paired with First Name for contact lookup.",
+          "common_source_names": [
+            "invoice_contact_last",
+            "inv_contact_lname",
+            "bill_to_last_name"
+          ],
+          "example_values": [
+            "Smith",
+            "Johnson"
+          ]
+        },
+        {
+          "field_name": "Invoice Address Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Address type to use for invoice delivery (e.g., Business, Home)",
+          "transformation_notes": "Must match an Axcess available Address Type. Determines which address from the contact/client record is used for invoices.",
+          "common_source_names": [
+            "invoice_address_type",
+            "inv_addr_type",
+            "bill_to_address_type"
+          ],
+          "example_values": [
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Print Paper Invoice",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether to generate a printed paper invoice for this client",
+          "transformation_notes": "Boolean: 'True' or 'False'. Controls physical mail delivery of invoices.",
+          "common_source_names": [
+            "print_invoice",
+            "paper_invoice",
+            "mail_invoice",
+            "print_paper_invoice"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Use Contact as Statement Recipient",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether to use a specific contact (vs. the client record) as the AR statement recipient",
+          "transformation_notes": "Boolean: 'True' or 'False'. If True, Statement Client Contact First/Last Name fields identify the recipient.",
+          "common_source_names": [
+            "use_contact_statement",
+            "statement_to_contact",
+            "contact_statement_flag"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Statement Client Contact First Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "First name of the contact designated as AR statement recipient \u2014 references Contacts (CCIU)",
+          "transformation_notes": "Must match a contact's First Name in Contacts (CCIU) entity. Only required when 'Use Contact as Statement Recipient' is True.",
+          "common_source_names": [
+            "statement_contact_first",
+            "stmt_contact_fname"
+          ],
+          "example_values": [
+            "John"
+          ]
+        },
+        {
+          "field_name": "Statement Client Contact Last Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Last name of the contact designated as AR statement recipient \u2014 references Contacts (CCIU)",
+          "transformation_notes": "Must match a contact's Last Name in Contacts (CCIU) entity.",
+          "common_source_names": [
+            "statement_contact_last",
+            "stmt_contact_lname"
+          ],
+          "example_values": [
+            "Smith"
+          ]
+        },
+        {
+          "field_name": "Statement Address Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Address type to use for statement delivery (e.g., Business, Home)",
+          "transformation_notes": "Must match an Axcess available Address Type.",
+          "common_source_names": [
+            "statement_address_type",
+            "stmt_addr_type"
+          ],
+          "example_values": [
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Print Paper Statement",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether to generate a printed paper AR statement for this client",
+          "transformation_notes": "Boolean: 'True' or 'False'. Controls physical mail delivery of statements.",
+          "common_source_names": [
+            "print_statement",
+            "paper_statement",
+            "mail_statement"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Send Copy to Document",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether to save a copy of invoices/statements to the document management system",
+          "transformation_notes": "Boolean: 'True' or 'False'. When True, Axcess stores a copy in the client's document folder.",
+          "common_source_names": [
+            "send_to_dms",
+            "copy_to_document",
+            "save_to_docs",
+            "document_copy"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        }
+      ]
+    },
+    "Client Email Invoices": {
+      "description": "Email-based invoice and statement delivery per client email type",
+      "sheet_name": "Client Email Invoices",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Client ID.Client Sub ID",
+          "references": "Client.Client ID + Client.Client Sub-ID"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID.Client Sub ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": "Without Sub: 123456. With Sub: 123456.789",
+          "enum": null,
+          "description": "Combined client identifier in dot notation \u2014 Client ID alone or Client ID.Sub-ID",
+          "transformation_notes": "Format: without sub = '123456', with sub = '123456.789'. Must reference existing Client entity records.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id",
+            "client_sub_id"
+          ],
+          "example_values": [
+            "123456",
+            "123456.789"
+          ]
+        },
+        {
+          "field_name": "Client Sort Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client sort name for reference \u2014 informational field to help identify the client row",
+          "transformation_notes": "Informational/display field. Should match the Sort Name from the Client entity. Not used for matching.",
+          "common_source_names": [
+            "sort_name",
+            "client_sort_name",
+            "alpha_name"
+          ],
+          "example_values": [
+            "Smith, John",
+            "Acme Corporation"
+          ]
+        },
+        {
+          "field_name": "Email Type",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Email type classification (e.g., Home, Business) \u2014 determines which client email address receives invoices/statements",
+          "transformation_notes": "Must match an Email Type configured on the client record. Paired with Receive Invoice and Receive Statement flags to control per-type delivery.",
+          "common_source_names": [
+            "email_type",
+            "email_category",
+            "email_classification"
+          ],
+          "example_values": [
+            "Business",
+            "Home",
+            "Other"
+          ]
+        },
+        {
+          "field_name": "Receive Invoice",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this email type should receive invoice emails for the client",
+          "transformation_notes": "Boolean: 'True' or 'False'. Controls email delivery of invoices per email type.",
+          "common_source_names": [
+            "receive_invoice",
+            "email_invoice",
+            "invoice_email_flag",
+            "send_invoice_email"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Receive Statement",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this email type should receive AR statement emails for the client",
+          "transformation_notes": "Boolean: 'True' or 'False'. Controls email delivery of statements per email type.",
+          "common_source_names": [
+            "receive_statement",
+            "email_statement",
+            "statement_email_flag",
+            "send_statement_email"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        }
+      ]
+    },
+    "Contact Email Invoices": {
+      "description": "Email-based invoice and statement delivery per individual contact",
+      "sheet_name": "Contact Email Invoices",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Assignment Client ID",
+          "references": "Client.Client ID (with optional .Sub-ID)"
+        },
+        {
+          "field": "Originating Client ID",
+          "references": "Client.Client ID (with optional .Sub-ID)"
+        },
+        {
+          "field": "FirstName + LastName",
+          "references": "Contacts (CCIU).First Name + Last Name"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Assignment Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": "Without Sub: 123456. With Sub: 123456.789",
+          "enum": null,
+          "description": "Client ID this contact email routing applies to \u2014 the client whose invoices/statements this contact should receive",
+          "transformation_notes": "Format: Client ID alone or Client ID.Sub-ID. Must reference an existing Client entity record.",
+          "common_source_names": [
+            "assignment_client_id",
+            "client_id",
+            "assigned_client",
+            "bill_to_client"
+          ],
+          "example_values": [
+            "123456",
+            "123456.789"
+          ]
+        },
+        {
+          "field_name": "Honorific",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact honorific/title \u2014 required if the contact record in CCIU uses an honorific (for dedup matching)",
+          "transformation_notes": "Must match the Honorific on the contact record in Contacts (CCIU) if one exists. Part of contact identification.",
+          "common_source_names": [
+            "honorific",
+            "title",
+            "prefix"
+          ],
+          "example_values": [
+            "Mr.",
+            "Mrs.",
+            "Dr."
+          ]
+        },
+        {
+          "field_name": "FirstName",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "First name of the contact \u2014 must match a contact in Contacts (CCIU) entity",
+          "transformation_notes": "Must exactly match the First Name in Contacts (CCIU) for contact lookup.",
+          "common_source_names": [
+            "first_name",
+            "fname",
+            "contact_first_name"
+          ],
+          "example_values": [
+            "John",
+            "Mary"
+          ]
+        },
+        {
+          "field_name": "MiddleName",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact middle name \u2014 required if the contact record in CCIU uses a middle name (for dedup matching)",
+          "transformation_notes": "Must match the Middle Name on the contact record if one exists.",
+          "common_source_names": [
+            "middle_name",
+            "mname",
+            "middle_initial"
+          ],
+          "example_values": [
+            "Allen",
+            "M"
+          ]
+        },
+        {
+          "field_name": "LastName",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Last name of the contact \u2014 must match a contact in Contacts (CCIU) entity",
+          "transformation_notes": "Must exactly match the Last Name in Contacts (CCIU) for contact lookup.",
+          "common_source_names": [
+            "last_name",
+            "lname",
+            "contact_last_name"
+          ],
+          "example_values": [
+            "Smith",
+            "Johnson"
+          ]
+        },
+        {
+          "field_name": "Suffix",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Contact suffix \u2014 required if the contact record in CCIU uses a suffix (for dedup matching)",
+          "transformation_notes": "Must match the Suffix on the contact record if one exists.",
+          "common_source_names": [
+            "suffix",
+            "name_suffix"
+          ],
+          "example_values": [
+            "Jr.",
+            "III"
+          ]
+        },
+        {
+          "field_name": "Originating Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": "Without Sub: 123456. With Sub: 123456.789",
+          "enum": null,
+          "description": "The Client ID where this contact was originally created \u2014 used with name fields for unique contact identification",
+          "transformation_notes": "Format: Client ID alone or Client ID.Sub-ID. References the contact's home client record in Contacts (CCIU).",
+          "common_source_names": [
+            "originating_client_id",
+            "source_client_id",
+            "contact_owner_client"
+          ],
+          "example_values": [
+            "123456",
+            "1584.123"
+          ]
+        },
+        {
+          "field_name": "Client Contact Email Type",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Email type classification for this contact's email (e.g., Home, Business)",
+          "transformation_notes": "Must match an Email Type configured on the contact record in Contacts (CCIU).",
+          "common_source_names": [
+            "email_type",
+            "contact_email_type",
+            "email_classification"
+          ],
+          "example_values": [
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Client Contact Email Address",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "The specific email address to use for invoice/statement delivery to this contact",
+          "transformation_notes": "Must be a valid email address. Must match an email on the contact record in Contacts (CCIU).",
+          "common_source_names": [
+            "email_address",
+            "contact_email",
+            "email",
+            "invoice_email"
+          ],
+          "example_values": [
+            "jsmith@example.com"
+          ]
+        },
+        {
+          "field_name": "InvoiceFlag",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this contact email should receive invoice emails",
+          "transformation_notes": "Boolean: 'True' or 'False'.",
+          "common_source_names": [
+            "invoice_flag",
+            "receive_invoice",
+            "send_invoice",
+            "invoice_yn"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "StatementFlag",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this contact email should receive AR statement emails",
+          "transformation_notes": "Boolean: 'True' or 'False'.",
+          "common_source_names": [
+            "statement_flag",
+            "receive_statement",
+            "send_statement",
+            "statement_yn"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        }
+      ]
+    },
+    "Client Custom Field Values": {
+      "description": "Firm-defined custom fields per client \u2014 flexible key-value store",
+      "sheet_name": "Client Custom Field Values",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "value_types": [
+        {
+          "type": "Checkbox",
+          "format": "T or F",
+          "example": "T"
+        },
+        {
+          "type": "Client List",
+          "format": "Client Sort Name",
+          "example": "Eyre, Jane"
+        },
+        {
+          "type": "Currency",
+          "format": "decimal number",
+          "example": "1000.00"
+        },
+        {
+          "type": "Date",
+          "format": "m/d/yyyy",
+          "example": "2/6/2025"
+        },
+        {
+          "type": "Department List",
+          "format": "Existing Department Value in Axcess",
+          "example": "Accounting"
+        },
+        {
+          "type": "Drop-down List",
+          "format": "Valid value from custom value list",
+          "example": null
+        },
+        {
+          "type": "Number",
+          "format": "Non-decimal number",
+          "example": "10"
+        },
+        {
+          "type": "Office List",
+          "format": "Existing Office Value in Axcess",
+          "example": null
+        },
+        {
+          "type": "Rate",
+          "format": "decimal number",
+          "example": "10.001"
+        },
+        {
+          "type": "Staff List",
+          "format": "Staff ID",
+          "example": "Parker, Peter"
+        },
+        {
+          "type": "Text",
+          "format": "Any text value, max length of field in Lists",
+          "example": "TestValue"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Field Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Name of the custom field as defined in Axcess Lists setup \u2014 the key in the key-value pair",
+          "transformation_notes": "Must exactly match a custom field name configured in Axcess. Custom fields are firm-defined and vary by Axcess instance. Verify available custom fields during discovery.",
+          "common_source_names": [
+            "field_name",
+            "custom_field_name",
+            "attribute_name",
+            "property_name",
+            "udf_name",
+            "custom_field"
+          ],
+          "example_values": [
+            "Referral Source",
+            "Industry Code",
+            "Engagement Risk Level"
+          ]
+        },
+        {
+          "field_name": "Field Value",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": "Depends on value type \u2014 see value_types",
+          "enum": null,
+          "description": "Value for the custom field \u2014 format depends on the field's value type (Checkbox, Date, Currency, Text, etc.)",
+          "transformation_notes": "Format varies by value type: Checkbox='T'/'F', Date='m/d/yyyy', Currency=decimal, Number=integer, Text=free text, Staff List=Staff ID, Client List=Client Sort Name. See entity value_types spec for complete format rules.",
+          "common_source_names": [
+            "field_value",
+            "custom_field_value",
+            "attribute_value",
+            "property_value",
+            "udf_value",
+            "value"
+          ],
+          "example_values": [
+            "T",
+            "2/6/2025",
+            "1000.00",
+            "TestValue"
+          ]
+        },
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier this custom field value belongs to",
+          "transformation_notes": "Must match Client entity. Standard formatting rules.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier this custom field value belongs to",
+          "transformation_notes": "Must match Client entity if used.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client"
+          ],
+          "example_values": [
+            "001"
+          ]
+        }
+      ]
+    },
+    "Billing Group Renames": {
+      "description": "Rename existing billing groups by GUID reference",
+      "sheet_name": "Billing Group Renames",
+      "primary_key": [
+        "Billing Group GUID"
+      ],
+      "foreign_keys": [],
+      "fields": [
+        {
+          "field_name": "New Billing Group Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": {
+            "max_length": 45
+          },
+          "format": null,
+          "enum": null,
+          "description": "New display name for an existing billing group (max 45 characters)",
+          "transformation_notes": "Max 45 characters. Used to rename billing groups during migration \u2014 the group is identified by GUID, not old name.",
+          "common_source_names": [
+            "new_group_name",
+            "billing_group_name",
+            "group_name_new"
+          ],
+          "example_values": [
+            "Premium Billing Group",
+            "Monthly Retainer Clients"
+          ]
+        },
+        {
+          "field_name": "New Billing Group Description",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Updated description for the billing group being renamed",
+          "transformation_notes": "Free-text description. Optional.",
+          "common_source_names": [
+            "new_group_description",
+            "group_desc_new",
+            "billing_group_desc"
+          ],
+          "example_values": [
+            "Clients billed on monthly retainer basis"
+          ]
+        },
+        {
+          "field_name": "Billing Group GUID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Globally unique identifier of the existing billing group to rename \u2014 obtained from Axcess",
+          "transformation_notes": "Must be a valid GUID from the existing Axcess billing group setup. Cannot be fabricated \u2014 must be extracted from Axcess.",
+          "common_source_names": [
+            "billing_group_guid",
+            "group_guid",
+            "group_id",
+            "billing_group_id"
+          ],
+          "example_values": [
+            "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          ]
+        }
+      ]
+    },
+    "Billing Group Creation": {
+      "description": "Create or remove billing groups",
+      "sheet_name": "Billing Group Creation",
+      "primary_key": [
+        "Billing Group Name"
+      ],
+      "foreign_keys": [],
+      "referenced_by": [
+        "Billing Group Assignments"
+      ],
+      "fields": [
+        {
+          "field_name": "Add or Remove",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Add",
+            "Remove"
+          ],
+          "description": "Action to perform: create a new billing group or remove an existing one",
+          "transformation_notes": "Enum: 'Add' to create, 'Remove' to delete. Removal requires no active client assignments.",
+          "common_source_names": [
+            "action",
+            "add_remove",
+            "operation"
+          ],
+          "example_values": [
+            "Add",
+            "Remove"
+          ]
+        },
+        {
+          "field_name": "Billing Group Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": {
+            "max_length": 45
+          },
+          "format": null,
+          "enum": null,
+          "description": "Name of the billing group to create or remove (max 45 characters)",
+          "transformation_notes": "Max 45 characters. Must be unique across billing groups. Used as the key for Billing Group Assignments.",
+          "common_source_names": [
+            "billing_group_name",
+            "group_name",
+            "billing_group"
+          ],
+          "example_values": [
+            "Tax Season Priority",
+            "Monthly Retainer"
+          ]
+        },
+        {
+          "field_name": "Billing Group Description",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Description of the billing group's purpose",
+          "transformation_notes": "Free-text. Optional.",
+          "common_source_names": [
+            "billing_group_description",
+            "group_description",
+            "group_desc"
+          ],
+          "example_values": [
+            "Clients prioritized during tax season billing"
+          ]
+        }
+      ]
+    },
+    "Billing Group Assignments": {
+      "description": "Assign clients to billing groups with principal designation and billing mode",
+      "sheet_name": "Billing Group Assignments",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Billing Group Name",
+          "references": "Billing Group Creation.Billing Group Name"
+        },
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Add/Remove",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Add",
+            "Remove"
+          ],
+          "description": "Action to perform: assign a client to or remove a client from a billing group",
+          "transformation_notes": "Enum: 'Add' or 'Remove'.",
+          "common_source_names": [
+            "action",
+            "add_remove",
+            "operation"
+          ],
+          "example_values": [
+            "Add",
+            "Remove"
+          ]
+        },
+        {
+          "field_name": "Billing Group Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": {
+            "max_length": 45
+          },
+          "format": null,
+          "enum": null,
+          "description": "Name of the billing group to assign the client to \u2014 must exist in Billing Group Creation",
+          "transformation_notes": "Max 45 characters. Must reference an existing billing group from Billing Group Creation entity.",
+          "common_source_names": [
+            "billing_group_name",
+            "group_name",
+            "billing_group"
+          ],
+          "example_values": [
+            "Tax Season Priority"
+          ]
+        },
+        {
+          "field_name": "Is Principal? (True or False)",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Whether this client is the principal/lead client in the billing group \u2014 controls group billing behavior",
+          "transformation_notes": "Boolean. Each billing group should have exactly one principal client. The principal receives the consolidated group invoice.",
+          "common_source_names": [
+            "is_principal",
+            "principal_flag",
+            "primary_client",
+            "lead_client",
+            "group_principal"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier being assigned to the billing group",
+          "transformation_notes": "Must match Client entity.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier being assigned to the billing group",
+          "transformation_notes": "Must match Client entity if used.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client"
+          ],
+          "example_values": [
+            "001"
+          ]
+        },
+        {
+          "field_name": "Bill As Individual/Group",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Individual",
+            "Group"
+          ],
+          "description": "Whether this client should be billed individually or as part of the group on consolidated invoices",
+          "transformation_notes": "Enum: 'Individual' for separate invoices, 'Group' for consolidated billing through the principal client.",
+          "common_source_names": [
+            "bill_as",
+            "billing_mode",
+            "individual_group",
+            "billing_type"
+          ],
+          "example_values": [
+            "Individual",
+            "Group"
+          ]
+        }
+      ]
+    },
+    "Client Group Creation": {
+      "description": "Create or remove client groups",
+      "sheet_name": "Client Group Creation",
+      "primary_key": [
+        "Client Group Name"
+      ],
+      "foreign_keys": [],
+      "referenced_by": [
+        "Client Group Assignments"
+      ],
+      "fields": [
+        {
+          "field_name": "Add or Remove",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Add",
+            "Remove"
+          ],
+          "description": "Action to perform: create a new client group or remove an existing one",
+          "transformation_notes": "Enum: 'Add' to create, 'Remove' to delete.",
+          "common_source_names": [
+            "action",
+            "add_remove",
+            "operation"
+          ],
+          "example_values": [
+            "Add",
+            "Remove"
+          ]
+        },
+        {
+          "field_name": "Client Group Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": {
+            "max_length": 45
+          },
+          "format": null,
+          "enum": null,
+          "description": "Name of the client group to create or remove (max 45 characters)",
+          "transformation_notes": "Max 45 characters. Must be unique across client groups. Used as the key for Client Group Assignments.",
+          "common_source_names": [
+            "client_group_name",
+            "group_name",
+            "client_group",
+            "category_name"
+          ],
+          "example_values": [
+            "High Net Worth",
+            "Nonprofit Clients",
+            "Tax Only"
+          ]
+        },
+        {
+          "field_name": "Client Group Description",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Description of the client group's purpose",
+          "transformation_notes": "Free-text. Optional.",
+          "common_source_names": [
+            "client_group_description",
+            "group_description",
+            "group_desc"
+          ],
+          "example_values": [
+            "Clients with >$1M in assets under advisement"
+          ]
+        }
+      ]
+    },
+    "Client Group Assignments": {
+      "description": "Assign clients to client groups with financial reporting flag",
+      "sheet_name": "Client Group Assignments",
+      "primary_key": null,
+      "foreign_keys": [
+        {
+          "field": "Client Group Name",
+          "references": "Client Group Creation.Client Group Name"
+        },
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "fields": [
+        {
+          "field_name": "Add/Remove",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "Add",
+            "Remove"
+          ],
+          "description": "Action to perform: assign a client to or remove a client from a client group",
+          "transformation_notes": "Enum: 'Add' or 'Remove'.",
+          "common_source_names": [
+            "action",
+            "add_remove",
+            "operation"
+          ],
+          "example_values": [
+            "Add",
+            "Remove"
+          ]
+        },
+        {
+          "field_name": "Client Group Name",
+          "field_type": "string",
+          "required": true,
+          "constraints": {
+            "max_length": 45
+          },
+          "format": null,
+          "enum": null,
+          "description": "Name of the client group to assign the client to \u2014 must exist in Client Group Creation",
+          "transformation_notes": "Max 45 characters. Must reference an existing client group from Client Group Creation entity.",
+          "common_source_names": [
+            "client_group_name",
+            "group_name",
+            "client_group"
+          ],
+          "example_values": [
+            "High Net Worth"
+          ]
+        },
+        {
+          "field_name": "Is Financial Reporting Group?",
+          "field_type": "boolean",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "True",
+            "False"
+          ],
+          "description": "Whether this group is used for financial reporting consolidation purposes",
+          "transformation_notes": "Boolean: 'True' or 'False'. Financial reporting groups enable consolidated financial reporting across grouped clients.",
+          "common_source_names": [
+            "financial_reporting",
+            "is_financial_group",
+            "reporting_group",
+            "consolidation_group"
+          ],
+          "example_values": [
+            "True",
+            "False"
+          ]
+        },
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier being assigned to the client group",
+          "transformation_notes": "Must match Client entity.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier being assigned to the client group",
+          "transformation_notes": "Must match Client entity if used.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client"
+          ],
+          "example_values": [
+            "001"
+          ]
+        }
+      ]
+    },
+    "Client Primary Contact Info": {
+      "description": "Set primary contact type preferences per client \u2014 which email, address, phone type is primary",
+      "sheet_name": "Client Primary Contact Info",
+      "primary_key": [
+        "Client ID",
+        "Client Sub ID"
+      ],
+      "foreign_keys": [
+        {
+          "field": "Client ID",
+          "references": "Client.Client ID"
+        },
+        {
+          "field": "Client Sub ID",
+          "references": "Client.Client Sub-ID"
+        }
+      ],
+      "special_notes": [
+        "Blank cells are ignored \u2014 they will not unset the primary on the client",
+        "To unset the primary, place <Remove> in the cell"
+      ],
+      "fields": [
+        {
+          "field_name": "Client ID",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client identifier for primary contact info configuration",
+          "transformation_notes": "Must match Client entity. Format as Text for leading zeros.",
+          "common_source_names": [
+            "client_id",
+            "client_no",
+            "account_id"
+          ],
+          "example_values": [
+            "000012345"
+          ]
+        },
+        {
+          "field_name": "Client Sub ID",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Sub-client identifier for primary contact info configuration",
+          "transformation_notes": "Must match Client entity if used. Format as Text for leading zeros.",
+          "common_source_names": [
+            "sub_id",
+            "sub_client"
+          ],
+          "example_values": [
+            "001"
+          ]
+        },
+        {
+          "field_name": "Sort Name",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Client sort name for reference \u2014 informational field to identify the client row",
+          "transformation_notes": "Should match the Sort Name from the Client entity. Informational only.",
+          "common_source_names": [
+            "sort_name",
+            "client_sort_name"
+          ],
+          "example_values": [
+            "Smith, John"
+          ]
+        },
+        {
+          "field_name": "Client Type Code",
+          "field_type": "string",
+          "required": true,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "IN - Individual",
+            "CR - Corporation",
+            "PR - Partnership",
+            "SP - Sole Proprietorship",
+            "EX - Exempt Organization/Non-Profit",
+            "FD - Fiduciary",
+            "EP - Employee Plan",
+            "OT - Other"
+          ],
+          "description": "Entity type code for the client \u2014 determines available contact type defaults and admin/sponsor options",
+          "transformation_notes": "Must use the exact code-label format: 'IN - Individual', 'CR - Corporation', etc. Map from source entity types. This field controls downstream behavior like Admin/Sponsor eligibility.",
+          "common_source_names": [
+            "client_type_code",
+            "entity_type",
+            "client_type",
+            "type_code",
+            "org_type"
+          ],
+          "example_values": [
+            "IN - Individual",
+            "CR - Corporation",
+            "PR - Partnership",
+            "EX - Exempt Organization/Non-Profit"
+          ]
+        },
+        {
+          "field_name": "Primary Email Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Email type to set as the client's primary email (e.g., Business, Home)",
+          "transformation_notes": "Must match an Email Type already configured on the client. Blank = no change; '<Remove>' = unset primary.",
+          "common_source_names": [
+            "primary_email_type",
+            "default_email_type",
+            "preferred_email"
+          ],
+          "example_values": [
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Primary Address Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Address type to set as the client's primary address (e.g., Business)",
+          "transformation_notes": "Must match an Address Type already configured on the client. Blank = no change; '<Remove>' = unset primary.",
+          "common_source_names": [
+            "primary_address_type",
+            "default_address_type",
+            "preferred_address"
+          ],
+          "example_values": [
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Mailing Address Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Address type to set as the client's mailing address \u2014 may differ from primary",
+          "transformation_notes": "Must match an Address Type already configured on the client. Blank = no change; '<Remove>' = unset mailing.",
+          "common_source_names": [
+            "mailing_address_type",
+            "mail_to_type",
+            "correspondence_address"
+          ],
+          "example_values": [
+            "Home",
+            "Other",
+            "Business"
+          ]
+        },
+        {
+          "field_name": "Primary Phone Type",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": null,
+          "description": "Phone type to set as the client's primary phone (e.g., Mobile, Business)",
+          "transformation_notes": "Must match a Phone Type already configured on the client. Blank = no change; '<Remove>' = unset primary.",
+          "common_source_names": [
+            "primary_phone_type",
+            "default_phone_type",
+            "preferred_phone"
+          ],
+          "example_values": [
+            "Mobile",
+            "Business",
+            "Home"
+          ]
+        },
+        {
+          "field_name": "Instant Messengers",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": "Type:Provider pairs, comma-separated",
+          "enum": null,
+          "description": "IM type and provider pairs to configure for this client \u2014 comma-separated Type:Provider format",
+          "transformation_notes": "Format: 'Type:Provider' pairs, comma-separated. Example: 'Home:AIM' or 'Business:PalTalk,Home:AIM'.",
+          "common_source_names": [
+            "instant_messengers",
+            "im_config",
+            "messenger_settings"
+          ],
+          "example_values": [
+            "Home:AIM",
+            "Business:PalTalk,Home:AIM"
+          ]
+        },
+        {
+          "field_name": "Admin or Sponsor",
+          "field_type": "string",
+          "required": false,
+          "constraints": null,
+          "format": null,
+          "enum": [
+            "ADMIN",
+            "SPNSR"
+          ],
+          "description": "Admin or Sponsor designation \u2014 only applicable for Employee Plan or Custom entity type clients",
+          "transformation_notes": "Enum: 'ADMIN' or 'SPNSR'. Only set for clients with Client Type Code of 'EP - Employee Plan'. Leave blank for all other entity types.",
+          "common_source_names": [
+            "admin_sponsor",
+            "admin_or_sponsor",
+            "plan_role",
+            "ep_role"
+          ],
+          "example_values": [
+            "ADMIN",
+            "SPNSR"
+          ]
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "summary": "Client is the central entity. All other entities reference Client via Client ID (and optionally Client Sub-ID). Groups and Billing Groups are created independently then assigned to clients. Contacts can be assigned to multiple clients and are referenced by invoice/statement routing entities.",
+    "entity_graph": [
+      {
+        "from": "AR",
+        "to": "Client",
+        "via": "Client ID + Client Sub-ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "WIP",
+        "to": "Client",
+        "via": "Client ID + Client Sub-ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "WIP",
+        "to": "Staff (external)",
+        "via": "Staff ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "WIP",
+        "to": "Service Code (external)",
+        "via": "Service Code",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Contacts (CCIU)",
+        "to": "Client",
+        "via": "Originating Client ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Contacts (CCIU)",
+        "to": "Client",
+        "via": "Client Assignments",
+        "cardinality": "many-to-many"
+      },
+      {
+        "from": "Client Billing General Info",
+        "to": "Client",
+        "via": "Client ID + Client Sub ID",
+        "cardinality": "one-to-one"
+      },
+      {
+        "from": "Address Invoice and Statements",
+        "to": "Client",
+        "via": "Client ID.Client Sub ID",
+        "cardinality": "one-to-one"
+      },
+      {
+        "from": "Address Invoice and Statements",
+        "to": "Contacts (CCIU)",
+        "via": "First Name + Last Name",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Client Email Invoices",
+        "to": "Client",
+        "via": "Client ID.Client Sub ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Contact Email Invoices",
+        "to": "Client",
+        "via": "Assignment Client ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Contact Email Invoices",
+        "to": "Contacts (CCIU)",
+        "via": "FirstName + LastName + Originating Client ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Client Custom Field Values",
+        "to": "Client",
+        "via": "Client ID + Client Sub ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Billing Group Assignments",
+        "to": "Billing Group Creation",
+        "via": "Billing Group Name",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Billing Group Assignments",
+        "to": "Client",
+        "via": "Client ID + Client Sub ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Client Group Assignments",
+        "to": "Client Group Creation",
+        "via": "Client Group Name",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Client Group Assignments",
+        "to": "Client",
+        "via": "Client ID + Client Sub ID",
+        "cardinality": "many-to-one"
+      },
+      {
+        "from": "Client Primary Contact Info",
+        "to": "Client",
+        "via": "Client ID + Client Sub ID",
+        "cardinality": "one-to-one"
+      }
+    ],
+    "external_references": [
+      {
+        "entity": "WIP",
+        "field": "Staff ID",
+        "references": "Staff table (not in conversion template \u2014 setup separately in Axcess)"
+      },
+      {
+        "entity": "WIP",
+        "field": "Service Code",
+        "references": "Service Code table (not in conversion template \u2014 setup separately in Axcess)"
+      },
+      {
+        "entity": "Client",
+        "field": "CRS1-CRS7",
+        "references": "Staff ID setup in Axcess (not in conversion template)"
+      },
+      {
+        "entity": "Client Custom Field Values",
+        "field": "Field Value (Staff List type)",
+        "references": "Staff ID (not in conversion template)"
+      },
+      {
+        "entity": "Client Custom Field Values",
+        "field": "Field Value (Department List type)",
+        "references": "Department setup in Axcess (not in conversion template)"
+      },
+      {
+        "entity": "Client Custom Field Values",
+        "field": "Field Value (Office List type)",
+        "references": "Office setup in Axcess (not in conversion template)"
+      }
+    ]
+  },
+  "import_order": {
+    "description": "Suggested import sequence based on dependency chain",
+    "sequence": [
+      {
+        "order": 1,
+        "entity": "Client",
+        "reason": "All other entities reference Client ID"
+      },
+      {
+        "order": 2,
+        "entity": "Contacts (CCIU)",
+        "reason": "Referenced by invoice/statement routing"
+      },
+      {
+        "order": 3,
+        "entity": "Client Primary Contact Info",
+        "reason": "Sets primary types after contacts exist"
+      },
+      {
+        "order": 4,
+        "entity": "Client Billing General Info",
+        "reason": "Billing config before transactions"
+      },
+      {
+        "order": 5,
+        "entity": "Address Invoice and Statements",
+        "reason": "References contacts"
+      },
+      {
+        "order": 6,
+        "entity": "Client Email Invoices",
+        "reason": "Email routing after billing config"
+      },
+      {
+        "order": 7,
+        "entity": "Contact Email Invoices",
+        "reason": "Contact-level email routing"
+      },
+      {
+        "order": 8,
+        "entity": "Client Custom Field Values",
+        "reason": "After client exists"
+      },
+      {
+        "order": 9,
+        "entity": "Billing Group Creation",
+        "reason": "Groups must exist before assignments"
+      },
+      {
+        "order": 10,
+        "entity": "Billing Group Renames",
+        "reason": "Rename existing groups if needed"
+      },
+      {
+        "order": 11,
+        "entity": "Billing Group Assignments",
+        "reason": "After groups and clients exist"
+      },
+      {
+        "order": 12,
+        "entity": "Client Group Creation",
+        "reason": "Groups must exist before assignments"
+      },
+      {
+        "order": 13,
+        "entity": "Client Group Assignments",
+        "reason": "After groups and clients exist"
+      },
+      {
+        "order": 14,
+        "entity": "AR",
+        "reason": "Transaction data after client setup"
+      },
+      {
+        "order": 15,
+        "entity": "WIP",
+        "reason": "Transaction data after client setup"
+      }
+    ]
+  }
+}

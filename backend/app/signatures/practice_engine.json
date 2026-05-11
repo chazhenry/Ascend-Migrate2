@@ -1,0 +1,17 @@
+{
+    "system_name": "Practice Engine",
+    "version_hint": "v2.x",
+    "required_tables": [
+        "tblclient",
+        "tblengagement",
+        "tbstaff"
+    ],
+    "scored_columns": [
+        "tblclient.clientid",
+        "tblclient.clientname",
+        "tblengagement.engagementid",
+        "tbstaff.staffid",
+        "tblinvoice.invoiceid"
+    ],
+    "max_score": 12
+}

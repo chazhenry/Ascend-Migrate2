@@ -1,0 +1,119 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    /*
+     * Elevation system:
+     *   Light — background (slate-50) < card (white) < popover (white + shadow-elevated)
+     *   Dark  — background (slate-950) < card (slate-900) < popover (slate-800)
+     *
+     * Borders: slate-200 (light) / slate-800 (dark)
+     * Primary action: indigo-600 (light) / indigo-500 (dark)
+     */
+    :root {
+        /* Layer 0 — page background */
+        --background: 210 40% 98%;         /* slate-50  */
+        --foreground: 222 47% 11%;         /* slate-900 */
+
+        /* Layer 1 — cards */
+        --card: 0 0% 100%;                 /* white     */
+        --card-foreground: 222 47% 11%;    /* slate-900 */
+
+        /* Layer 2 — popovers / modals (highest elevation) */
+        --popover: 0 0% 100%;              /* white     */
+        --popover-foreground: 222 47% 11%; /* slate-900 */
+
+        /* Structure */
+        --border: 213 27% 84%;             /* slate-200 */
+        --input: 213 27% 84%;              /* slate-200 */
+        --ring: 243 75% 59%;               /* indigo-600 */
+
+        /* Primary — indigo-600 */
+        --primary: 243 75% 59%;
+        --primary-foreground: 0 0% 100%;
+
+        /* Secondary — slate-100 */
+        --secondary: 214 32% 91%;
+        --secondary-foreground: 215 25% 27%; /* slate-700 */
+
+        /* Muted — slate-100 */
+        --muted: 214 32% 91%;
+        --muted-foreground: 215 14% 47%;   /* slate-500 */
+
+        /* Accent — slate-100 */
+        --accent: 214 32% 91%;
+        --accent-foreground: 215 25% 27%;  /* slate-700 */
+
+        /* Semantic */
+        --destructive: 0 72% 51%;          /* red-600   */
+        --destructive-foreground: 0 0% 100%;
+        --success: 142 71% 45%;
+        --warning: 38 92% 50%;
+        --info: 217 91% 60%;
+    }
+
+    .dark {
+        /* Layer 0 — darkest base */
+        --background: 224 71% 4%;          /* slate-950 */
+        --foreground: 210 40% 98%;         /* slate-50  */
+
+        /* Layer 1 — cards, one step lighter */
+        --card: 222 47% 11%;               /* slate-900 */
+        --card-foreground: 210 40% 98%;    /* slate-50  */
+
+        /* Layer 2 — popovers / modals, one step above cards */
+        --popover: 217 33% 17%;            /* slate-800 */
+        --popover-foreground: 210 40% 98%; /* slate-50  */
+
+        /* Structure */
+        --border: 217 33% 17%;             /* slate-800 */
+        --input: 217 33% 17%;              /* slate-800 */
+        --ring: 239 84% 67%;               /* indigo-500 */
+
+        /* Primary — indigo-500 (lighter for contrast on dark) */
+        --primary: 239 84% 67%;
+        --primary-foreground: 0 0% 100%;
+
+        /* Secondary — slate-700 */
+        --secondary: 215 25% 27%;
+        --secondary-foreground: 210 40% 98%;
+
+        /* Muted — slate-800 */
+        --muted: 217 33% 17%;
+        --muted-foreground: 215 16% 57%;   /* slate-400 */
+
+        /* Accent — slate-700 */
+        --accent: 215 25% 27%;
+        --accent-foreground: 210 40% 98%;
+
+        /* Semantic */
+        --destructive: 0 72% 57%;
+        --destructive-foreground: 0 0% 100%;
+        --success: 142 71% 45%;
+        --warning: 38 92% 58%;
+        --info: 217 91% 65%;
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    html {
+        color-scheme: light;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+    }
+
+    #root {
+        @apply min-h-screen;
+    }
+}

@@ -1,0 +1,218 @@
+{
+    "document_name": "Ascend Discovery Document",
+    "generated_at": "2026-04-20",
+    "source": "fake seeded answers",
+    "sections": [
+        {
+            "category_key": "current_software_data_architecture",
+            "category_title": "1. Source Software & Data",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "software_stack_versions",
+                    "prompt": "What practice management, tax, audit, and accounting software are you currently using, and what version?",
+                    "answer": "The firm currently uses Practice Engine 12.4 for practice management, CCH ProSystem fx Tax 2024 for tax preparation, CaseWare Working Papers 2023 for audit support, and QuickBooks Desktop Enterprise 24.0 for internal accounting."
+                },
+                {
+                    "key": "hosting_and_backups",
+                    "prompt": "Are your systems cloud-hosted, on-premises, or hybrid? Who controls the data backups?",
+                    "answer": "The environment is hybrid. Practice Engine and the document share run on an on-prem SQL Server VM, while tax software is vendor-hosted. Internal IT controls nightly backups to Azure Blob and weekly offline retention."
+                },
+                {
+                    "key": "integrated_vs_separate",
+                    "prompt": "Do you use a single integrated platform or separate systems for different functions (for example, tax separate from bookkeeping)?",
+                    "answer": "The firm uses separate systems. Practice management, tax, audit, document storage, and bookkeeping are all maintained in different applications with limited integration between them."
+                },
+                {
+                    "key": "primary_database_engine",
+                    "prompt": "What is your primary database engine (SQL Server, Access, proprietary flat files)?",
+                    "answer": "The primary operational database is Microsoft SQL Server 2019. A few legacy reports are still exported from Access-based archives."
+                },
+                {
+                    "key": "export_capabilities",
+                    "prompt": "Can you export your data, and in what formats (CSV, XML, JSON, fixed-width, API)?",
+                    "answer": "Yes. The firm can export core tables to CSV and SQL query output, AR history to CSV, selected metadata to Excel, and a limited set of document attributes through a REST API."
+                }
+            ]
+        },
+        {
+            "category_key": "client_entity_data",
+            "category_title": "2. Client & Entity Data",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "client_unique_identifier",
+                    "prompt": "How do you uniquely identify a client — is there a client ID, EIN/SSN, or is it name-based?",
+                    "answer": "Clients are uniquely identified by a client code generated in Practice Engine. EIN and SSN values are stored separately and are not used as the primary system key."
+                },
+                {
+                    "key": "entity_hierarchy_representation",
+                    "prompt": "Do you track multiple entities under a single client/family relationship? If so, how is that hierarchy represented?",
+                    "answer": "Yes. Family and business group relationships are represented by a parent client code plus separate engagement rows for each related entity. Some trust and partnership records also use a shared household grouping field."
+                },
+                {
+                    "key": "merged_duplicate_archived_clients",
+                    "prompt": "Are there merged, duplicate, or archived clients in your system we should know about?",
+                    "answer": "Yes. There are archived clients from a 2021 acquisition, plus an estimated 3 to 5 percent duplicate contact records caused by inconsistent household merges."
+                }
+            ]
+        },
+        {
+            "category_key": "tax_return_data",
+            "category_title": "3. Tax & Return Data",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "prepared_return_types",
+                    "prompt": "What tax return types do you prepare (1040, 1065, 1120, 1120S, 990, 709, etc.)?",
+                    "answer": "The firm primarily prepares 1040, 1065, 1120, 1120S, 1041, and 990 returns, with occasional 706 and 709 work."
+                },
+                {
+                    "key": "tax_year_and_jurisdiction_tracking",
+                    "prompt": "How are tax years and filing jurisdictions tracked — do you handle multi-state returns?",
+                    "answer": "Tax year is tracked at the return level, and jurisdiction is stored in separate return-state tables. The firm handles multi-state individual and pass-through filings regularly."
+                },
+                {
+                    "key": "prior_year_storage_detail",
+                    "prompt": "Where do you store prior-year return data, and how many years back is it digitized?",
+                    "answer": "Prior-year returns are stored in CCH ProSystem fx Tax and a document archive. Roughly eight years are fully digitized, with older years available as PDFs only."
+                },
+                {
+                    "key": "extensions_amendments_handling",
+                    "prompt": "How are extensions, amendments, and superseding returns distinguished in your system?",
+                    "answer": "Extensions are tracked with a return status flag and deadline override date. Amendments use a separate amended-return indicator and a linked work item. Superseded filings are noted in free-text workflow comments."
+                },
+                {
+                    "key": "efile_record_location",
+                    "prompt": "Are electronic filing records (acknowledgements, e-file history) stored in the practice management system or separately?",
+                    "answer": "E-file acknowledgements and filing history are stored separately inside the tax application and not in the practice management database."
+                }
+            ]
+        },
+        {
+            "category_key": "chart_of_accounts_financial_data",
+            "category_title": "4. Chart of Accounts & Financial",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "chart_structure_segments",
+                    "prompt": "What is the structure of your chart of accounts — how many segments, and what do they represent (department, location, fund)?",
+                    "answer": "The internal chart of accounts uses four segments: natural account, department, office, and optional project. Client-facing ledgers are more limited and vary by engagement."
+                },
+                {
+                    "key": "accounts_standardized_or_custom",
+                    "prompt": "Are accounts standardized across all clients or customized per engagement?",
+                    "answer": "The base chart is standardized across the firm, but high-touch CAS and advisory clients often use engagement-specific mapping overlays."
+                },
+                {
+                    "key": "intercompany_consolidation_handling",
+                    "prompt": "How is inter-company or consolidation data handled?",
+                    "answer": "Intercompany eliminations are handled outside Practice Engine in Excel workbooks maintained by the advisory team, with summarized balances posted back to reporting packages."
+                },
+                {
+                    "key": "trial_balance_gl_export_detail",
+                    "prompt": "Are trial balance and general ledger exports available, and at what level of detail?",
+                    "answer": "Yes. Trial balance exports are available at the account-period level, and GL detail can be exported down to transaction line detail for the current and prior fiscal year."
+                }
+            ]
+        },
+        {
+            "category_key": "workflow_staff_billing",
+            "category_title": "5. Workflow, Staff & Billing",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "staff_identifiers",
+                    "prompt": "How are staff members identified — by name, employee ID, or license number?",
+                    "answer": "Staff are identified primarily by a short employee code used in time entry and scheduling, with full name and HR employee ID stored separately."
+                },
+                {
+                    "key": "staff_assignment_history",
+                    "prompt": "How are staff assigned to clients and engagements, and is that relationship tracked historically?",
+                    "answer": "Client partner, manager, and billing contact are stored on the engagement row, and assignment changes are partially historical through audit tables starting in 2023."
+                },
+                {
+                    "key": "workflow_status_definitions",
+                    "prompt": "How are workflow statuses defined (for example, In Preparation, In Review, Filed)? Is there a custom status list?",
+                    "answer": "The firm uses a custom status list including Not Started, In Prep, Awaiting Client, Review, Ready to File, Filed, and Closed. Some departments also use a local 'Partner Hold' status."
+                },
+                {
+                    "key": "due_date_tracking",
+                    "prompt": "Are due dates and compliance deadlines tracked, and are they tied to return type or manually entered?",
+                    "answer": "Standard deadlines are seeded from return type templates, but managers can override them manually at the engagement level for extensions and state-specific requirements."
+                },
+                {
+                    "key": "billing_rates_time_tracking",
+                    "prompt": "What billing rates and time-tracking data exists, and is it tied to specific engagements or clients?",
+                    "answer": "Time is captured by staff, service code, and engagement. Billing rates are staff-role based by default, with engagement-specific overrides for about 15 percent of clients."
+                },
+                {
+                    "key": "ar_aging_buckets",
+                    "prompt": "What AR aging buckets do you use, and are they system-defined or custom?",
+                    "answer": "The firm uses 0-30, 31-60, 61-90, 91-120, and 120+ day aging buckets. These are standard system buckets with one custom collections dashboard layered on top."
+                }
+            ]
+        },
+        {
+            "category_key": "document_management",
+            "category_title": "6. Document Management",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "document_storage_repositories",
+                    "prompt": "Where are client documents stored — integrated DMS, network share, SharePoint, third-party like Canopy or SmartVault?",
+                    "answer": "Documents are split across an on-prem network share for legacy files, SharePoint for current collaboration, and SmartVault for a subset of tax engagements."
+                },
+                {
+                    "key": "document_taxonomy_consistency",
+                    "prompt": "Are documents tagged to a specific client, return year, and document type in a consistent taxonomy?",
+                    "answer": "Current-year tax files follow a fairly consistent client-year-document taxonomy, but audit and advisory folders are less standardized across teams."
+                },
+                {
+                    "key": "document_naming_convention",
+                    "prompt": "What naming convention is used for files, and is it enforced systematically or ad hoc?",
+                    "answer": "The recommended naming convention is ClientCode_Year_DocumentType_Description, but enforcement is ad hoc and older folders use many local variations."
+                },
+                {
+                    "key": "signed_letters_forms",
+                    "prompt": "Are there signed engagement letters or authorization forms that need to be migrated and linked to client records?",
+                    "answer": "Yes. Signed engagement letters, 8879 forms, and ACH authorization forms need to be retained and linked back to client records after migration."
+                }
+            ]
+        },
+        {
+            "category_key": "data_quality_exceptions",
+            "category_title": "7. Data Quality & Exceptions",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "known_data_quality_issues",
+                    "prompt": "Are there any known data quality issues — duplicate records, missing EINs, inconsistent naming?",
+                    "answer": "Yes. Known issues include duplicate household contacts, missing EIN values on older nonprofit clients, inconsistent state abbreviations, and invoice numbers that sometimes include alpha prefixes."
+                },
+                {
+                    "key": "prior_migration_artifacts",
+                    "prompt": "Has your data ever been migrated from a prior system? If so, are there known legacy artifacts or gaps from that migration?",
+                    "answer": "Yes. A 2021 migration from an Access-based system left behind placeholder contact rows, several retired service codes, and partial historical WIP detail for the first two converted years."
+                }
+            ]
+        },
+        {
+            "category_key": "custom_fields",
+            "category_title": "8. Custom Fields",
+            "section": "discovery",
+            "questions": [
+                {
+                    "key": "custom_field_business_context",
+                    "prompt": "What custom fields, local workarounds, or client-specific attributes does the team rely on that are not covered by standard source-system fields?",
+                    "answer": "The team relies on custom fields for acquisition source, preferred portal delivery method, engagement complexity rating, SALT nexus tracking, and reviewer escalation notes."
+                },
+                {
+                    "key": "custom_field_usage_patterns",
+                    "prompt": "Which teams, workflows, reports, or billing/tax processes depend on these custom fields today?",
+                    "answer": "Tax operations uses them for routing and due-date dashboards, CAS uses them for recurring service packaging, and billing managers rely on them for invoice routing and exception review reports."
+                }
+            ]
+        }
+    ]
+}

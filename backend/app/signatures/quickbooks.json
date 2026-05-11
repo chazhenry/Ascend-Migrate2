@@ -1,0 +1,17 @@
+{
+    "system_name": "QuickBooks",
+    "version_hint": "Desktop/Online",
+    "required_tables": [
+        "customer",
+        "invoice",
+        "employee"
+    ],
+    "scored_columns": [
+        "customer.listid",
+        "customer.fullname",
+        "invoice.txnid",
+        "invoice.refnumber",
+        "employee.listid"
+    ],
+    "max_score": 12
+}

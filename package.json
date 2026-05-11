@@ -1,0 +1,11 @@
+{
+    "name": "project-migrate",
+    "private": true,
+    "version": "0.1.0",
+    "scripts": {
+        "turbo": "concurrently -k -n backend,frontend -c blue,magenta \"python -m uvicorn --app-dir backend app.main:app --reload --host localhost --port 8000\" \"npm --prefix frontend run dev -- --host localhost\""
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
+}

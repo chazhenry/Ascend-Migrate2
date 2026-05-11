@@ -1,0 +1,177 @@
+{
+    "document_name": "Ascend Discovery Document",
+    "sections": [
+        {
+            "category_key": "current_software_data_architecture",
+            "category_title": "1. Source Software & Data",
+            "questions": [
+                {
+                    "key": "software_stack_versions",
+                    "prompt": "What practice management, tax, audit, and accounting software are you currently using, and what version?"
+                },
+                {
+                    "key": "hosting_and_backups",
+                    "prompt": "Are your systems cloud-hosted, on-premises, or hybrid? Who controls the data backups?"
+                },
+                {
+                    "key": "integrated_vs_separate",
+                    "prompt": "Do you use a single integrated platform or separate systems for different functions (for example, tax separate from bookkeeping)?"
+                },
+                {
+                    "key": "primary_database_engine",
+                    "prompt": "What is your primary database engine (SQL Server, Access, proprietary flat files)?"
+                },
+                {
+                    "key": "export_capabilities",
+                    "prompt": "Can you export your data, and in what formats (CSV, XML, JSON, fixed-width, API)?"
+                }
+            ]
+        },
+        {
+            "category_key": "client_entity_data",
+            "category_title": "2. Client & Entity Data",
+            "questions": [
+                {
+                    "key": "client_unique_identifier",
+                    "prompt": "How do you uniquely identify a client — is there a client ID, EIN/SSN, or is it name-based?"
+                },
+                {
+                    "key": "entity_hierarchy_representation",
+                    "prompt": "Do you track multiple entities under a single client/family relationship? If so, how is that hierarchy represented?"
+                },
+                {
+                    "key": "merged_duplicate_archived_clients",
+                    "prompt": "Are there merged, duplicate, or archived clients in your system we should know about?"
+                }
+            ]
+        },
+        {
+            "category_key": "tax_return_data",
+            "category_title": "3. Tax & Return Data",
+            "questions": [
+                {
+                    "key": "prepared_return_types",
+                    "prompt": "What tax return types do you prepare (1040, 1065, 1120, 1120S, 990, 709, etc.)?"
+                },
+                {
+                    "key": "tax_year_and_jurisdiction_tracking",
+                    "prompt": "How are tax years and filing jurisdictions tracked — do you handle multi-state returns?"
+                },
+                {
+                    "key": "prior_year_storage_detail",
+                    "prompt": "Where do you store prior-year return data, and how many years back is it digitized?"
+                },
+                {
+                    "key": "extensions_amendments_handling",
+                    "prompt": "How are extensions, amendments, and superseding returns distinguished in your system?"
+                },
+                {
+                    "key": "efile_record_location",
+                    "prompt": "Are electronic filing records (acknowledgements, e-file history) stored in the practice management system or separately?"
+                }
+            ]
+        },
+        {
+            "category_key": "chart_of_accounts_financial_data",
+            "category_title": "4. Chart of Accounts & Financial",
+            "questions": [
+                {
+                    "key": "chart_structure_segments",
+                    "prompt": "What is the structure of your chart of accounts — how many segments, and what do they represent (department, location, fund)?"
+                },
+                {
+                    "key": "accounts_standardized_or_custom",
+                    "prompt": "Are accounts standardized across all clients or customized per engagement?"
+                },
+                {
+                    "key": "intercompany_consolidation_handling",
+                    "prompt": "How is inter-company or consolidation data handled?"
+                },
+                {
+                    "key": "trial_balance_gl_export_detail",
+                    "prompt": "Are trial balance and general ledger exports available, and at what level of detail?"
+                }
+            ]
+        },
+        {
+            "category_key": "workflow_staff_billing",
+            "category_title": "5. Workflow, Staff & Billing",
+            "questions": [
+                {
+                    "key": "staff_identifiers",
+                    "prompt": "How are staff members identified — by name, employee ID, or license number?"
+                },
+                {
+                    "key": "staff_assignment_history",
+                    "prompt": "How are staff assigned to clients and engagements, and is that relationship tracked historically?"
+                },
+                {
+                    "key": "workflow_status_definitions",
+                    "prompt": "How are workflow statuses defined (for example, In Preparation, In Review, Filed)? Is there a custom status list?"
+                },
+                {
+                    "key": "due_date_tracking",
+                    "prompt": "Are due dates and compliance deadlines tracked, and are they tied to return type or manually entered?"
+                },
+                {
+                    "key": "billing_rates_time_tracking",
+                    "prompt": "What billing rates and time-tracking data exists, and is it tied to specific engagements or clients?"
+                },
+                {
+                    "key": "ar_aging_buckets",
+                    "prompt": "What AR aging buckets do you use, and are they system-defined or custom?"
+                }
+            ]
+        },
+        {
+            "category_key": "document_management",
+            "category_title": "6. Document Management",
+            "questions": [
+                {
+                    "key": "document_storage_repositories",
+                    "prompt": "Where are client documents stored — integrated DMS, network share, SharePoint, third-party like Canopy or SmartVault?"
+                },
+                {
+                    "key": "document_taxonomy_consistency",
+                    "prompt": "Are documents tagged to a specific client, return year, and document type in a consistent taxonomy?"
+                },
+                {
+                    "key": "document_naming_convention",
+                    "prompt": "What naming convention is used for files, and is it enforced systematically or ad hoc?"
+                },
+                {
+                    "key": "signed_letters_forms",
+                    "prompt": "Are there signed engagement letters or authorization forms that need to be migrated and linked to client records?"
+                }
+            ]
+        },
+        {
+            "category_key": "data_quality_exceptions",
+            "category_title": "7. Data Quality & Exceptions",
+            "questions": [
+                {
+                    "key": "known_data_quality_issues",
+                    "prompt": "Are there any known data quality issues — duplicate records, missing EINs, inconsistent naming?"
+                },
+                {
+                    "key": "prior_migration_artifacts",
+                    "prompt": "Has your data ever been migrated from a prior system? If so, are there known legacy artifacts or gaps from that migration?"
+                }
+            ]
+        },
+        {
+            "category_key": "custom_fields",
+            "category_title": "8. Custom Fields",
+            "questions": [
+                {
+                    "key": "custom_field_business_context",
+                    "prompt": "What custom fields, local workarounds, or client-specific attributes does the team rely on that are not covered by standard source-system fields?"
+                },
+                {
+                    "key": "custom_field_usage_patterns",
+                    "prompt": "Which teams, workflows, reports, or billing/tax processes depend on these custom fields today?"
+                }
+            ]
+        }
+    ]
+}

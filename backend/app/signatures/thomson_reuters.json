@@ -1,0 +1,17 @@
+{
+    "system_name": "Thomson Reuters Practice CS",
+    "version_hint": "2024",
+    "required_tables": [
+        "client",
+        "engagement",
+        "staff"
+    ],
+    "scored_columns": [
+        "client.client_id",
+        "client.name",
+        "engagement.engagement_id",
+        "staff.staff_id",
+        "invoice.invoice_number"
+    ],
+    "max_score": 12
+}
