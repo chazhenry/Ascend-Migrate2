@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 @layer base {
+
     /*
      * Elevation system:
      *   Light — background (slate-50) < card (white) < popover (white + shadow-elevated)
@@ -15,21 +16,30 @@
      */
     :root {
         /* Layer 0 — page background */
-        --background: 210 40% 98%;         /* slate-50  */
-        --foreground: 222 47% 11%;         /* slate-900 */
+        --background: 210 40% 98%;
+        /* slate-50  */
+        --foreground: 222 47% 11%;
+        /* slate-900 */
 
         /* Layer 1 — cards */
-        --card: 0 0% 100%;                 /* white     */
-        --card-foreground: 222 47% 11%;    /* slate-900 */
+        --card: 0 0% 100%;
+        /* white     */
+        --card-foreground: 222 47% 11%;
+        /* slate-900 */
 
         /* Layer 2 — popovers / modals (highest elevation) */
-        --popover: 0 0% 100%;              /* white     */
-        --popover-foreground: 222 47% 11%; /* slate-900 */
+        --popover: 0 0% 100%;
+        /* white     */
+        --popover-foreground: 222 47% 11%;
+        /* slate-900 */
 
         /* Structure */
-        --border: 213 27% 84%;             /* slate-200 */
-        --input: 213 27% 84%;              /* slate-200 */
-        --ring: 243 75% 59%;               /* indigo-600 */
+        --border: 213 27% 84%;
+        /* slate-200 */
+        --input: 213 27% 84%;
+        /* slate-200 */
+        --ring: 243 75% 59%;
+        /* indigo-600 */
 
         /* Primary — indigo-600 */
         --primary: 243 75% 59%;
@@ -37,18 +47,22 @@
 
         /* Secondary — slate-100 */
         --secondary: 214 32% 91%;
-        --secondary-foreground: 215 25% 27%; /* slate-700 */
+        --secondary-foreground: 215 25% 27%;
+        /* slate-700 */
 
         /* Muted — slate-100 */
         --muted: 214 32% 91%;
-        --muted-foreground: 215 14% 47%;   /* slate-500 */
+        --muted-foreground: 215 14% 47%;
+        /* slate-500 */
 
         /* Accent — slate-100 */
         --accent: 214 32% 91%;
-        --accent-foreground: 215 25% 27%;  /* slate-700 */
+        --accent-foreground: 215 25% 27%;
+        /* slate-700 */
 
         /* Semantic */
-        --destructive: 0 72% 51%;          /* red-600   */
+        --destructive: 0 72% 51%;
+        /* red-600   */
         --destructive-foreground: 0 0% 100%;
         --success: 142 71% 45%;
         --warning: 38 92% 50%;
@@ -57,21 +71,30 @@
 
     .dark {
         /* Layer 0 — darkest base */
-        --background: 224 71% 4%;          /* slate-950 */
-        --foreground: 210 40% 98%;         /* slate-50  */
+        --background: 224 71% 4%;
+        /* slate-950 */
+        --foreground: 210 40% 98%;
+        /* slate-50  */
 
         /* Layer 1 — cards, one step lighter */
-        --card: 222 47% 11%;               /* slate-900 */
-        --card-foreground: 210 40% 98%;    /* slate-50  */
+        --card: 222 47% 11%;
+        /* slate-900 */
+        --card-foreground: 210 40% 98%;
+        /* slate-50  */
 
         /* Layer 2 — popovers / modals, one step above cards */
-        --popover: 217 33% 17%;            /* slate-800 */
-        --popover-foreground: 210 40% 98%; /* slate-50  */
+        --popover: 217 33% 17%;
+        /* slate-800 */
+        --popover-foreground: 210 40% 98%;
+        /* slate-50  */
 
         /* Structure */
-        --border: 217 33% 17%;             /* slate-800 */
-        --input: 217 33% 17%;              /* slate-800 */
-        --ring: 239 84% 67%;               /* indigo-500 */
+        --border: 217 33% 17%;
+        /* slate-800 */
+        --input: 217 33% 17%;
+        /* slate-800 */
+        --ring: 239 84% 67%;
+        /* indigo-500 */
 
         /* Primary — indigo-500 (lighter for contrast on dark) */
         --primary: 239 84% 67%;
@@ -83,7 +106,8 @@
 
         /* Muted — slate-800 */
         --muted: 217 33% 17%;
-        --muted-foreground: 215 16% 57%;   /* slate-400 */
+        --muted-foreground: 215 16% 57%;
+        /* slate-400 */
 
         /* Accent — slate-700 */
         --accent: 215 25% 27%;
@@ -116,4 +140,24 @@
     #root {
         @apply min-h-screen;
     }
+}
+
+@keyframes marchingAnts {
+    to {
+        background-position: 10px 0, -10px 100%, 0 -10px, 100% 10px;
+    }
+}
+
+.marching-ants {
+    border: none !important;
+    background-image:
+        linear-gradient(90deg, #3b82f6 50%, transparent 50%),
+        linear-gradient(90deg, #3b82f6 50%, transparent 50%),
+        linear-gradient(0deg, #3b82f6 50%, transparent 50%),
+        linear-gradient(0deg, #3b82f6 50%, transparent 50%);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 10px 2.5px, 10px 2.5px, 2.5px 10px, 2.5px 10px;
+    background-position: 0 0, 0 100%, 0 0, 100% 0;
+    animation: marchingAnts 0.5s linear infinite;
+    box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.35);
 }

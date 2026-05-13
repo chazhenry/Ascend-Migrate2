@@ -22,6 +22,8 @@ The backend provides FastAPI APIs, async SQLAlchemy models, background job execu
 8. Start the backend with `cd backend && uvicorn app.main:app --reload`.
 9. Start the frontend with `cd frontend && npm run dev`.
 10. Or install root dependencies with `npm install` and run both from the workspace root with `npm run turbo`.
+11. If you want the detached background runner instead, use `npm run turbo:bg`.
+12. Check the detached runner with `npm run turbo:status`, stop it with `npm run turbo:stop`, or restart it with `npm run turbo:restart`.
 
 ## Environment Variables
 

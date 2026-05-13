@@ -1,4 +1,0 @@
-No negative invoices.
-FYE sanity check.
-status logic. 
-

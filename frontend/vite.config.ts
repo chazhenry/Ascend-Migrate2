@@ -13,23 +13,13 @@ export default defineConfig({
         },
     },
     server: {
-        host: "0.0.0.0",
+        host: "localhost",
         port: 5180,
-        strictPort: true,
-        hmr: {
-            host: "localhost",
-            port: 5180,
-            clientPort: 5180,
-        },
         proxy: {
             "/api": {
-                target: "http://localhost:8000",
+                target: "http://localhost:8001",
                 changeOrigin: true,
             },
-        },
-        watch: {
-            usePolling: true,
-            interval: 100,
         },
     },
 });

@@ -8,7 +8,7 @@ export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
-export const DialogContent = ({ children, className }: { children: ReactNode; className?: string }): JSX.Element => (
+export const DialogContent = ({ children, className, hideClose = false }: { children: ReactNode; className?: string; hideClose?: boolean }): JSX.Element => (
     <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-900/50" />
         <DialogPrimitive.Content
@@ -18,9 +18,11 @@ export const DialogContent = ({ children, className }: { children: ReactNode; cl
             )}
         >
             {children}
-            <DialogPrimitive.Close className="absolute right-3 top-3 rounded-md p-1 text-mutedForeground transition hover:bg-muted">
-                <X className="h-4 w-4" />
-            </DialogPrimitive.Close>
+            {hideClose ? null : (
+                <DialogPrimitive.Close className="absolute right-3 top-3 rounded-md p-1 text-mutedForeground transition hover:bg-muted">
+                    <X className="h-4 w-4" />
+                </DialogPrimitive.Close>
+            )}
         </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
 );

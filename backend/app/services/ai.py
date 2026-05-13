@@ -91,11 +91,15 @@ def _post_llm_request(url: str, api_key: str, payload: dict[str, Any]) -> dict[s
         raise RuntimeError(f"LLM request failed: {exc.reason}") from exc
 
 
-async def call_text_prompt(prompt: str, provider: str | None = None) -> dict[str, str]:
+async def call_text_prompt(prompt: str, provider: str | None = None, system_prompt: str | None = None) -> dict[str, str]:
     provider_config = _get_llm_provider_config(provider)
+    messages: list[dict[str, str]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
     payload = {
         "model": provider_config["model"],
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "temperature": 0.2,
     }
     response_payload = await asyncio.to_thread(

@@ -9,3 +9,4 @@ backend/alembic/versions/*.pyc
 backend/storage/
 frontend/dist/
 frontend/node_modules/
+.devrunner/

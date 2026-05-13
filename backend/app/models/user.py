@@ -19,5 +19,4 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     acquisitions = relationship("Acquisition", back_populates="creator")
-    projects = relationship("Project", back_populates="creator")
     triggered_jobs = relationship("Job", back_populates="triggered_by_user")

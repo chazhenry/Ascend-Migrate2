@@ -15,6 +15,7 @@ import type {
     ManifestOverride,
     ProjectDetail,
     ProjectListItem,
+    ProjectMutationPayload,
     SqlTemplate,
     User,
 } from "@/types/api";
@@ -97,7 +98,7 @@ export const projectsApi = {
         const response = await apiClient.get<ProjectListItem[]>("/projects");
         return response.data;
     },
-    create: async (payload: Record<string, unknown>): Promise<ProjectDetail> => {
+    create: async (payload: ProjectMutationPayload): Promise<ProjectDetail> => {
         const response = await apiClient.post<ProjectDetail>("/projects", payload);
         return response.data;
     },
@@ -105,7 +106,7 @@ export const projectsApi = {
         const response = await apiClient.get<ProjectDetail>(`/projects/${projectId}`);
         return response.data;
     },
-    update: async (projectId: string, payload: Record<string, unknown>): Promise<ProjectDetail> => {
+    update: async (projectId: string, payload: Partial<ProjectMutationPayload>): Promise<ProjectDetail> => {
         const response = await apiClient.patch<ProjectDetail>(`/projects/${projectId}`, payload);
         return response.data;
     },
@@ -185,11 +186,11 @@ export const manifestApi = {
 };
 
 export const staticSchemasApi = {
-    listFiles: async (folder: "cch" | "client"): Promise<string[]> => {
+    listFiles: async (folder: "cch" | "client" | "heuristics"): Promise<string[]> => {
         const response = await apiClient.get<string[]>(`/utils/static-schemas/${folder}`);
         return response.data;
     },
-    getFile: async (folder: "cch" | "client", filename: string): Promise<unknown> => {
+    getFile: async (folder: "cch" | "client" | "heuristics", filename: string): Promise<unknown> => {
         const response = await apiClient.get<unknown>(`/utils/static-schemas/${folder}/${filename}`);
         return response.data;
     },
@@ -207,15 +208,15 @@ export const utilitiesApi = {
     saveHeuristicsText: async (projectSlug: string, content: string): Promise<void> => {
         await apiClient.put(`/utils/heuristics/${projectSlug}`, { content });
     },
-    sqlTemplates: async (): Promise<SqlTemplate[]> => {
-        const response = await apiClient.get<SqlTemplate[]>("/utils/sql-templates");
+    sqlTemplate: async (entity: "Contacts" | "Clients" | "Jobs" | "AR" | "WIP"): Promise<SqlTemplate> => {
+        const response = await apiClient.get<SqlTemplate>(`/utils/sql-templates/${entity}`);
         return response.data;
     },
 };
 
 export const llmApi = {
-    prompt: async (prompt: string, provider: "deepseek" | "openai"): Promise<LLMPromptResponse> => {
-        const response = await apiClient.post<LLMPromptResponse>("/LLM/prompt", { prompt, provider });
+    prompt: async (prompt: string, provider: "deepseek" | "openai", systemPrompt?: string): Promise<LLMPromptResponse> => {
+        const response = await apiClient.post<LLMPromptResponse>("/LLM/prompt", { prompt, provider, system_prompt: systemPrompt ?? null });
         return response.data;
     },
 };
@@ -227,4 +228,19 @@ export const artifactsApi = {
     },
     downloadUrl: (acquisitionId: string, artifactId: string): string =>
         withTokenQuery(`/acquisitions/${acquisitionId}/artifacts/${artifactId}/download`),
+};
+
+export const pfxApi = {
+    status: async (): Promise<Record<string, unknown>> => {
+        const response = await apiClient.get<Record<string, unknown>>("/pfx/status");
+        return response.data;
+    },
+    revert: async (): Promise<{ message: string }> => {
+        const response = await apiClient.post<{ message: string }>("/pfx/revert");
+        return response.data;
+    },
+    writeTest: async (): Promise<{ message: string; client_row_count: number }> => {
+        const response = await apiClient.post<{ message: string; client_row_count: number }>("/pfx/write-test");
+        return response.data;
+    },
 };

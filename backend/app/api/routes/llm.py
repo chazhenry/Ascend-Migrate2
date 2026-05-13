@@ -20,7 +20,7 @@ async def get_llm_config() -> LLMConfigResponse:
 @router.post("/prompt", response_model=LLMPromptResponse)
 async def prompt_llm(payload: LLMPromptRequest) -> LLMPromptResponse:
     try:
-        result = await call_text_prompt(payload.prompt, payload.provider)
+        result = await call_text_prompt(payload.prompt, payload.provider, payload.system_prompt)
     except RuntimeError as exc:
         raise APIError(str(exc), "llm_request_failed", 400) from exc
 

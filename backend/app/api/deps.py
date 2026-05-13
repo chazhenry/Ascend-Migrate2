@@ -60,6 +60,7 @@ async def get_current_user(
         try:
             return await _get_or_create_dev_user(db)
         except Exception:
+            await db.rollback()
             return _build_ephemeral_dev_user()
     if credentials is None:
         raise APIError("Authentication is required.", "auth_required", 401)
@@ -84,6 +85,7 @@ async def get_current_user_or_token_query(
         try:
             return await _get_or_create_dev_user(db)
         except Exception:
+            await db.rollback()
             return _build_ephemeral_dev_user()
     token_value = credentials.credentials if credentials is not None else token
     if not token_value:

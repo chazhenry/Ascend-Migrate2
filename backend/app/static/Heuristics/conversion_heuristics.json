@@ -1,0 +1,287 @@
+{
+  "document_metadata": {
+    "title": "CCH Axcess Conversion Heuristics",
+    "description": "Domain knowledge captured from consultants who have performed Practice Engine to CCH Axcess Practice conversions. These heuristics encode workarounds, edge cases, and transformation logic that are not documented in CCH's official conversion template.",
+    "version": "1.1",
+    "last_updated": "2026-05-11",
+    "sources": [
+      {
+        "contributor": "Adam Morgan",
+        "role": "CCH Axcess conversion consultant (contracted via Ascend)",
+        "source_systems": ["Practice Engine"],
+        "destination_system": "CCH Axcess Practice",
+        "capture_date": "2026-05-04",
+        "capture_method": "Meeting transcript — Sync up on Sweeney Conrad Data"
+      },
+      {
+        "contributor": "Aaron Seeman",
+        "role": "CCH Axcess internal team (Wolters Kluwer)",
+        "source_systems": ["Practice Engine", "Generic"],
+        "destination_system": "CCH Axcess Practice",
+        "capture_date": "2026-05-05",
+        "capture_method": "Meeting transcript — Investigate options to migrate into CCH leveraging AI",
+        "also_present": "Michael Coyle (CCH team)"
+      }
+    ]
+  },
+  "heuristics": [
+    {
+      "id": "H-001",
+      "title": "WIP Write-Offs Require Dummy AR/Invoice Records",
+      "category": "WIP",
+      "severity": "critical",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "Practice Engine supports 'zero bills' — pure WIP write-offs that don't touch AR. No invoice record or invoice number is created. CCH Axcess requires every transaction that changes WIP to have a corresponding AR/invoice record. A WIP-only write-off has no valid destination in CCH without one.",
+      "workaround": "Create dummy invoice records in AR with a $0 AR value. These dummy records must link back to the WIP records so the write-off has a real invoice number. This satisfies CCH's constraint that all WIP changes flow through AR.",
+      "transformation_logic": {
+        "trigger": "Source WIP record has a write-off with no corresponding invoice/AR record",
+        "action": "Generate a synthetic AR record with invoice_amount = 0, linked to the WIP record via engagement/client key",
+        "destination_entities_affected": ["AR", "WIP"]
+      },
+      "script_impact": "The AR conversion script must include logic to detect and generate these dummy records. They must be created before or alongside WIP records due to FK dependencies.",
+      "eval_criteria": "Post-conversion WIP balances must net to zero for written-off engagements; every WIP record must have a corresponding AR/invoice reference."
+    },
+    {
+      "id": "H-002",
+      "title": "Progress Bills (Retainer Bills) Incompatibility",
+      "category": "WIP",
+      "severity": "critical",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "In Practice Engine, progress bills create negative WIP, and the outstanding balance of a progress bill can be written off or allocated via a zero bill or partial invoice. CCH Axcess does not support allocating a write-off to a progress bill. Additionally, CCH Practice Management tracks progress bills as a cumulative net amount on the client (sum all positives and negatives), whereas Practice Engine tracks each individual progress bill with its own outstanding-amount flag.",
+      "workaround": "Convert the write-off portion of each progress bill into a standalone invoice record on the CCH side so it validates properly. The individual PE progress bill balances must be collapsed into the cumulative model CCH expects.",
+      "transformation_logic": {
+        "trigger": "Source progress bill record with a partial write-off or outstanding balance flag",
+        "action": "Split into: (1) the progress bill amount as a cumulative entry, and (2) any write-off portion as a separate invoice record",
+        "destination_entities_affected": ["AR", "WIP"]
+      },
+      "script_impact": "Requires custom logic beyond the standard WIP/AR scripts. Must detect progress bill records in PE (look for negative WIP entries tied to retainer/progress bill types) and apply the split transformation.",
+      "eval_criteria": "Sum of progress bill entries in CCH must equal net outstanding progress bill balance in PE per client/engagement.",
+      "notes": "If a firm does not use progress bills, this heuristic can be skipped entirely — Adam described this as 'basically a victory.' Aaron Seeman independently confirmed retainer billings are a major pain point, especially when they span multiple years or engagements — the invoice can visibly look balanced but won't balance in the database."
+    },
+    {
+      "id": "H-003",
+      "title": "No Two PE Databases Are the Same",
+      "category": "data_quality",
+      "severity": "high",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "Generic conversion scripts that balance perfectly for one firm may fail on another. Root causes include: (1) firms using PE features differently, (2) bugs in the source data, (3) users manually deleting records directly in the database, (4) prior conversions from other systems that left data gaps or orphaned records.",
+      "workaround": "Treat all conversion scripts as a starting point, not a finished solution. The eval-and-iterate loop (run script, compare balances, adjust, re-run) is essential for every firm.",
+      "transformation_logic": {
+        "trigger": "Any new firm acquisition",
+        "action": "Run baseline scripts, then evaluate output against known balance checkpoints. Iterate until convergence."
+      },
+      "script_impact": "Scripts must be parameterized and tolerant of missing/orphaned data. Defensive NULL handling and referential integrity checks should be built in.",
+      "eval_criteria": "WIP balance, AR balance, client count, and revenue totals must match between source and destination within acceptable tolerance.",
+      "notes": "Aaron Seeman confirmed from the CCH side: the KSDT conversion was plagued by data quality variability — they could look at the data 100 ways and think they figured it all out, and then one record would blow it all up."
+    },
+    {
+      "id": "H-004",
+      "title": "Credit Memo Deduplication Required",
+      "category": "AR",
+      "severity": "high",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "Credit memos in Practice Engine can create duplicate records during conversion. The exact mechanism is unclear, but Adam specifically called out that he had to remove duplicates caused by credit memos.",
+      "workaround": "Add a deduplication pass to the AR conversion script that identifies and removes duplicate records introduced by credit memo processing.",
+      "transformation_logic": {
+        "trigger": "AR records with credit memo type indicators",
+        "action": "Deduplicate on a composite key (client + invoice number + amount + date or similar) after initial AR extraction"
+      },
+      "script_impact": "AR script must include a post-processing deduplication step specifically targeting credit memo records.",
+      "eval_criteria": "AR record count should not contain duplicate credit memo entries; net AR balance must still tie out.",
+      "notes": "Needs further investigation to determine the exact duplication pattern. Follow up with Adam for specifics."
+    },
+    {
+      "id": "H-005",
+      "title": "Post-Conversion Balancing Entries Required",
+      "category": "reconciliation",
+      "severity": "high",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "After running all conversion scripts, the resulting CCH balances may not exactly match the current PE balances due to rounding, transformation edge cases, or data gaps.",
+      "workaround": "After the core conversion, compute the delta between actual CCH post-conversion balance and current PE balance for each key metric (WIP, AR, revenue). Insert balancing entries to close the gap.",
+      "transformation_logic": {
+        "trigger": "Post-conversion balance comparison shows non-zero delta",
+        "action": "Generate synthetic adjustment records in the appropriate CCH entity to zero out the delta",
+        "destination_entities_affected": ["AR", "WIP"]
+      },
+      "script_impact": "This is a distinct final step that runs after all other scripts. Requires read access to both converted CCH data and source PE data.",
+      "eval_criteria": "All key balances (WIP, AR, revenue) must match between source PE and destination CCH to the penny after balancing entries are applied."
+    },
+    {
+      "id": "H-006",
+      "title": "Script Execution Order Is Critical",
+      "category": "process",
+      "severity": "high",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "The five core conversion scripts (Clients, Contacts, Jobs, WIP, AR) have interdependencies. Running them out of order will produce FK violations or missing reference data.",
+      "workaround": "Execute scripts in the documented dependency order.",
+      "transformation_logic": {
+        "execution_order": [
+          {"step": 1, "entity": "Clients", "rationale": "Foundation entity — all other records reference client IDs"},
+          {"step": 2, "entity": "Contacts", "rationale": "Links to clients; no downstream dependencies"},
+          {"step": 3, "entity": "Jobs", "rationale": "Links to clients; WIP and AR reference job/engagement IDs"},
+          {"step": 4, "entity": "WIP", "rationale": "Links to clients and jobs; AR dummy records (H-001) depend on WIP existing"},
+          {"step": 5, "entity": "AR", "rationale": "Links to clients, jobs, and WIP; includes dummy invoice records"}
+        ]
+      },
+      "script_impact": "The migration pipeline must enforce this ordering. Parallel execution is not safe.",
+      "eval_criteria": "Zero FK violation errors during import."
+    },
+    {
+      "id": "H-007",
+      "title": "CCH Staging Environment Access Is Unavailable",
+      "category": "infrastructure",
+      "severity": "high",
+      "source_system": null,
+      "destination_system": "CCH Axcess",
+      "problem": "CCH does not provide staging instances or direct database access for conversion work. Their model is upload-only: submit data via a link, and CCH processes it internally. They will not run ad-hoc SQL on the customer's behalf.",
+      "workaround": "The migration tool must produce perfect output files. No opportunity for post-upload corrections. All transformations, validations, and reconciliation must happen before submission.",
+      "transformation_logic": {
+        "trigger": "All conversion output",
+        "action": "Validate 100% of output against CCH schema constraints, allowed values, and referential integrity before generating the upload file"
+      },
+      "script_impact": "Pre-submission validation must be exhaustive. Output format must exactly match CCH's expected import template.",
+      "eval_criteria": "Zero rejection errors from CCH after upload.",
+      "notes": "Confirmed by both Adam Morgan and Aaron Seeman independently. Aaron added there is no staging environment for CCH Axcess. The workaround path is to use the PFX local SQL database schema as a proxy (see H-009)."
+    },
+    {
+      "id": "H-008",
+      "title": "PE Data Scope Extends Beyond Core 5 Entities",
+      "category": "scope",
+      "severity": "medium",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "The five core scripts cover primary entities, but PE contains additional data categories — notably attributes/custom fields — that may need migration.",
+      "workaround": "Inventory all PE data categories during discovery. Confirm with the acquiring firm which data beyond the core 5 is in scope.",
+      "transformation_logic": {
+        "trigger": "Discovery phase for any new firm",
+        "action": "Query PE for all populated tables beyond the core set; present findings to stakeholders for scope confirmation"
+      },
+      "script_impact": "May require additional conversion scripts. Custom fields/attributes may need mapping to CCH custom field infrastructure.",
+      "eval_criteria": "All in-scope PE data categories have corresponding CCH destination mappings."
+    },
+    {
+      "id": "H-009",
+      "title": "PFX Local SQL Database Is the True Staging Layer",
+      "category": "architecture",
+      "severity": "critical",
+      "source_system": "Any",
+      "destination_system": "CCH Axcess",
+      "problem": "The CCH conversion pipeline does not go directly from source data (or Excel template) into CCH Axcess. There is an intermediary: a legacy product called Practice Management (PFX), which runs as a local SQL Server database. All conversion data is first staged into PFX, validated there, and then migrated into CCH Axcess via a separate migration utility. Validating only against the Excel template or PFX alone is insufficient — additional data manipulation occurs during the PFX-to-Axcess migration step.",
+      "workaround": "The ideal eval pipeline should validate against PFX schema (not just the Excel template), and ideally also against the final CCH Axcess state post-migration. The PFX SQL database can stand alone without the PFX application — only the database schema is needed for staging and validation.",
+      "transformation_logic": {
+        "trigger": "Any conversion output destined for CCH Axcess",
+        "action": "Stage data into PFX SQL schema first, run PFX-level validation, then run through migration utility to CCH Axcess for final validation",
+        "pipeline": ["Source Data", "Excel Template (optional entry point)", "PFX Local SQL Database", "PFX Validation Checks", "Migration Utility", "CCH Axcess"]
+      },
+      "script_impact": "The migration tool needs access to the PFX database schema to produce output that will pass PFX-level validation. Writing directly to the Excel template bypasses critical validation steps.",
+      "eval_criteria": "Data passes all four levels of CCH validation (see H-010).",
+      "notes": "Aaron Seeman confirmed the PFX database does not require the PFX application — just the SQL schema. He indicated willingness to explore sharing it but needs approval from Michael Coyle. This is the single most important infrastructure asset to obtain."
+    },
+    {
+      "id": "H-010",
+      "title": "CCH Runs Four Levels of Validation",
+      "category": "validation",
+      "severity": "critical",
+      "source_system": "Any",
+      "destination_system": "CCH Axcess",
+      "problem": "CCH performs approximately four levels of validation on conversion data before it reaches production. Data that passes earlier levels can still fail at later ones. The levels are: (1) high-level checks against the Excel template, (2) detailed SQL validation queries against PFX data — field lengths, nullability, numeric type enforcement, invoice balance checks, (3) automated pre-migration checks via a separate tool that catches non-obvious invoice imbalances and structural issues, (4) post-migration validation in CCH Axcess itself.",
+      "workaround": "The migration tool's eval function must aspire to replicate all four levels. At minimum, go beyond Excel-level validation. The SQL validation queries CCH runs against PFX are the most actionable layer to replicate — they check field length, nullability, data type conformance, and accounting balance integrity (e.g., if $100 WIP was written down $50, the invoice amount must be $50).",
+      "transformation_logic": {
+        "validation_levels": [
+          {"level": 1, "name": "Excel Template Checks", "description": "High-level format and completeness checks against the 15-entity conversion template", "accessible": true},
+          {"level": 2, "name": "PFX SQL Validation", "description": "Detailed SQL queries checking field length, nullability, numeric type, accounting balance integrity", "accessible": "negotiating — CCH will share what they validate but not the SQL itself"},
+          {"level": 3, "name": "Automated Pre-Migration Checks", "description": "Separate tool that runs automated checks against PFX data before migration, catching non-obvious invoice imbalances", "accessible": false},
+          {"level": 4, "name": "Post-Migration CCH Axcess Validation", "description": "Final validation after data lands in CCH Axcess production", "accessible": false}
+        ]
+      },
+      "script_impact": "The eval function must incorporate at least Level 1 and Level 2 validation logic. Aaron indicated CCH would share what they validate (the rules) but not the SQL implementation — we can build equivalent checks from their rule descriptions.",
+      "eval_criteria": "Zero failures across all accessible validation levels before submission to CCH.",
+      "notes": "Aaron noted that CCH supplied Nanji with validation rules. These rules should be obtained and encoded into the eval function. The gap between Level 2 and Level 3 is where hidden failures lurk — retainer billings that visibly balance but fail structurally are caught here."
+    },
+    {
+      "id": "H-011",
+      "title": "CCH Axcess AR Traces Back to Originating Time Entry",
+      "category": "data_model",
+      "severity": "critical",
+      "source_system": "Practice Engine",
+      "destination_system": "CCH Axcess",
+      "problem": "In Practice Engine (and PFX), WIP and AR can exist independently. In CCH Axcess, AR ties all the way back to the originating time entry record — all billing information sits at the origin. This is a fundamental data model difference. Data that validates correctly in PFX can still create invalid scenarios in CCH Axcess because of this structural difference.",
+      "workaround": "Conversion logic must ensure every AR record in the CCH output has a traceable lineage back to a WIP/time entry origin. Orphaned AR records (those without corresponding WIP origins) need synthetic time entry records created to maintain referential integrity.",
+      "transformation_logic": {
+        "trigger": "Any AR record being converted to CCH Axcess format",
+        "action": "Verify that a WIP/time entry origin record exists. If not, generate a synthetic origin record. Billing information must be written at the origin level, not as standalone AR.",
+        "destination_entities_affected": ["AR", "WIP", "Time Entry"]
+      },
+      "script_impact": "This is the deepest architectural constraint in the entire conversion. AR and WIP scripts cannot be developed independently — they must be co-designed to ensure origin-linkage. This also explains why PFX-only validation is insufficient (see H-010).",
+      "eval_criteria": "Every AR record in CCH Axcess has a valid back-reference to an originating time entry. Zero orphaned AR records.",
+      "notes": "Aaron Seeman described this as 'where things can get messy.' This constraint is not visible in the Excel template or PFX schema — it only manifests in CCH Axcess itself. This is the strongest argument for obtaining CCH Axcess-level validation access."
+    },
+    {
+      "id": "H-012",
+      "title": "Human-in-the-Loop Fatigue Is a Real Failure Mode",
+      "category": "process",
+      "severity": "medium",
+      "source_system": "Any",
+      "destination_system": "CCH Axcess",
+      "problem": "CCH's current conversion process relies on manual playbooks hundreds of pages long. Human reviewers experience fatigue and develop false confidence bias: after checking 50 pages without finding a problem, they assume the next 50 are clean. With ~550 individual fields requiring mapping and complex multi-table SQL joins, the attention span required exceeds what humans reliably sustain.",
+      "workaround": "AI-driven validation eliminates fatigue bias — it checks every record with equal thoroughness. The eval-and-iterate loop replaces the human tendency to assume correctness after partial review.",
+      "transformation_logic": {
+        "trigger": "All validation steps",
+        "action": "Automated validation must cover 100% of records and fields, not rely on sampling or human spot-checks"
+      },
+      "script_impact": "Design the eval function to be exhaustive, not sample-based.",
+      "eval_criteria": "100% record coverage in validation — no sampling shortcuts.",
+      "notes": "Aaron Seeman volunteered this insight unprompted. He described it as a fundamental limitation of their current process and expressed genuine interest in the AI-driven approach. Strong selling point when engaging CCH."
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-001",
+      "related_heuristic": "H-002",
+      "question": "What was the exact workaround Kevin used for progress bill write-off allocation? Adam was unsure of the final implementation.",
+      "suggested_source": "Kevin (CCH-side consultant) or Tim (Ascend data team)"
+    },
+    {
+      "id": "OQ-002",
+      "related_heuristic": "H-004",
+      "question": "What is the exact duplication pattern caused by credit memos? Which fields define the composite key for deduplication?",
+      "suggested_source": "Adam Morgan — follow-up session"
+    },
+    {
+      "id": "OQ-003",
+      "related_heuristic": "H-008",
+      "question": "Which PE attribute/custom field categories are commonly populated across acquired firms? Is there a standard CCH destination for these?",
+      "suggested_source": "Adam Morgan + Liz/Lisa (Ascend data team)"
+    },
+    {
+      "id": "OQ-004",
+      "related_heuristic": "H-009",
+      "question": "Will Michael Coyle approve sharing the PFX SQL database schema for use as a staging/validation target? What licensing is required?",
+      "suggested_source": "Aaron Seeman to Michael Coyle (CCH team)"
+    },
+    {
+      "id": "OQ-005",
+      "related_heuristic": "H-010",
+      "question": "Can CCH provide the full validation rule descriptions (what they check, not the SQL) for all four levels? Aaron indicated they shared some with Nanji — obtain the full set.",
+      "suggested_source": "Aaron Seeman / Nanji"
+    },
+    {
+      "id": "OQ-006",
+      "related_heuristic": "H-011",
+      "question": "What is the exact CCH Axcess schema for the AR-to-time-entry back-reference? Which FK fields enforce the origin linkage?",
+      "suggested_source": "Aaron Seeman or CCH documentation (if access is granted)"
+    },
+    {
+      "id": "OQ-007",
+      "related_heuristic": "H-009",
+      "question": "Is the PFX migration utility available for licensing? What is the cost and process?",
+      "suggested_source": "Michael Coyle (CCH team)"
+    }
+  ]
+}

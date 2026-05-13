@@ -1,17 +1,12 @@
 from pathlib import Path
 import re
-from uuid import UUID
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
-from sqlalchemy import select
 
-from app.api.deps import CurrentUser, DBSession
+from app.api.deps import CurrentUser
 from app.core.config import get_settings
 from app.core.errors import APIError
-from app.models.acquisition import Acquisition
-from app.models.acquisition_file import AcquisitionFile
-from app.schemas.file import AcquisitionFileResponse
 from app.schemas.common import MessageResponse
 from app.schemas.project import HeuristicsTextRequest, SqlTemplateResponse
 from app.services.schema_utils import group_schema_records, normalize_schema_payload
@@ -24,68 +19,10 @@ router = APIRouter(tags=["files"])
 settings = get_settings()
 
 
-@router.post("/acquisitions/{acquisition_id}/files", response_model=list[AcquisitionFileResponse])
-async def upload_files(
-    acquisition_id: UUID,
-    _: CurrentUser,
-    db: DBSession,
-    files: list[UploadFile] = File(...),
-) -> list[AcquisitionFileResponse]:
-    acquisition = (await db.execute(select(Acquisition).where(Acquisition.id == acquisition_id))).scalar_one_or_none()
-    if not acquisition:
-        raise APIError("Acquisition not found.", "acquisition_not_found", 404)
-    responses: list[AcquisitionFileResponse] = []
-    from app.services.schema_utils import infer_file_type
-
-    for upload in files:
-        stored_path, file_size, row_count = await save_upload(acquisition_id, upload)
-        record = AcquisitionFile(
-            acquisition_id=acquisition_id,
-            filename=upload.filename or stored_path.name,
-            file_type=infer_file_type(upload.filename or stored_path.name),
-            row_count=row_count,
-            file_size_bytes=file_size,
-            storage_path=str(stored_path),
-        )
-        db.add(record)
-        await db.commit()
-        await db.refresh(record)
-        responses.append(AcquisitionFileResponse.model_validate(record))
-    return responses
-
-
-@router.get("/acquisitions/{acquisition_id}/files", response_model=list[AcquisitionFileResponse])
-async def list_files(acquisition_id: UUID, _: CurrentUser, db: DBSession) -> list[AcquisitionFileResponse]:
-    result = await db.execute(
-        select(AcquisitionFile)
-        .where(AcquisitionFile.acquisition_id == acquisition_id)
-        .order_by(AcquisitionFile.uploaded_at.desc())
-    )
-    return [AcquisitionFileResponse.model_validate(item) for item in result.scalars().all()]
-
-
-@router.delete("/acquisitions/{acquisition_id}/files/{file_id}", response_model=MessageResponse)
-async def delete_file(acquisition_id: UUID, file_id: UUID, _: CurrentUser, db: DBSession) -> MessageResponse:
-    result = await db.execute(
-        select(AcquisitionFile).where(
-            AcquisitionFile.acquisition_id == acquisition_id,
-            AcquisitionFile.id == file_id,
-        )
-    )
-    record = result.scalar_one_or_none()
-    if not record:
-        raise APIError("File not found.", "file_not_found", 404)
-    path = Path(record.storage_path)
-    if path.exists():
-        path.unlink()
-    await db.delete(record)
-    await db.commit()
-    return MessageResponse(detail="File deleted.", code="file_deleted")
-
-
 _STATIC_SCHEMA_DIRS: dict[str, Path] = {
     "cch": settings.static_dir / "CCH_schema",
     "client": settings.static_dir / "Client_schema",
+    "heuristics": settings.static_dir / "Heuristics",
 }
 _DISCOVERY_FILE = settings.static_dir / "Discovery" / "discovery_questions.json"
 _HEURISTICS_DIR = settings.static_dir / "Heuristics"
@@ -150,15 +87,29 @@ async def save_heuristics_text(project_slug: str, payload: HeuristicsTextRequest
     return MessageResponse(detail="Heuristics saved.", code="heuristics_saved")
 
 
-@router.get("/utils/sql-templates", response_model=list[SqlTemplateResponse])
-async def list_sql_templates() -> list[SqlTemplateResponse]:
+_SQL_ENTITY_MAP: dict[str, str] = {
+    "Contacts": "Contacts.sql",
+    "Clients": "Clients.sql",
+    "Jobs": "Jobs.sql",
+    "AR": "AR.sql",
+    "WIP": "WIP.sql",
+}
+
+
+@router.get("/utils/sql-templates/{entity}", response_model=SqlTemplateResponse)
+async def get_sql_template(_: CurrentUser, entity: str) -> SqlTemplateResponse:
+    if entity not in _SQL_ENTITY_MAP:
+        raise APIError(
+            f"Invalid entity '{entity}'. Must be one of: {', '.join(_SQL_ENTITY_MAP)}.",
+            "invalid_entity",
+            400,
+        )
     if not _SQL_TEMPLATES_DIR.exists():
         raise APIError("SQL templates folder not found.", "not_found", 404)
-    return [
-        SqlTemplateResponse(name=file_path.name, content=file_path.read_text(encoding="utf-8"))
-        for file_path in sorted(_SQL_TEMPLATES_DIR.iterdir())
-        if file_path.is_file() and file_path.suffix.lower() == ".sql"
-    ]
+    file_path = (_SQL_TEMPLATES_DIR / _SQL_ENTITY_MAP[entity]).resolve()
+    if not file_path.is_relative_to(_SQL_TEMPLATES_DIR.resolve()) or not file_path.exists():
+        raise APIError("SQL template file not found.", "not_found", 404)
+    return SqlTemplateResponse(name=file_path.name, content=file_path.read_text(encoding="utf-8"))
 
 
 @router.post("/utils/enrich-schema")

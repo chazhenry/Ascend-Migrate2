@@ -14,14 +14,63 @@ export interface ProjectListItem {
     id: string;
     name: string;
     slug: string;
+    display_name: string;
+    project_slug: string;
+    firm_name: string;
+    firm_revenue: number | null;
+    firm_staff_count: number | null;
+    firm_office_count: number | null;
+    source_system: string;
+    source_db_platform: string | null;
+    databricks_handle: string | null;
+    source_connection: Record<string, unknown> | null;
+    destination_system: string;
+    dau_instance_id: string | null;
     status: string;
-    created_by: string;
+    current_step: number | null;
+    wf_template_code: string | null;
+    entities_in_scope: unknown[];
+    enriched_schema_path_cch: string | null;
+    enriched_schema_path_client: string | null;
+    cycle: number | null;
+    ct_lead: string | null;
+    ascend_contacts: unknown[];
+    known_risks: unknown[];
+    notes: string | null;
+    created_by: string | null;
     created_at: string;
     updated_at: string;
 }
 
 export interface ProjectDetail extends ProjectListItem {
     config: Record<string, unknown>;
+}
+
+export interface ProjectMutationPayload {
+    display_name: string;
+    project_slug?: string;
+    firm_name: string;
+    firm_revenue?: number | null;
+    firm_staff_count?: number | null;
+    firm_office_count?: number | null;
+    source_system?: string;
+    source_db_platform?: string | null;
+    databricks_handle?: string | null;
+    source_connection?: Record<string, unknown> | null;
+    destination_system?: string;
+    dau_instance_id?: string | null;
+    status?: string;
+    current_step?: number | null;
+    wf_template_code?: string | null;
+    entities_in_scope?: unknown[];
+    enriched_schema_path_cch?: string | null;
+    enriched_schema_path_client?: string | null;
+    cycle?: number | null;
+    ct_lead?: string | null;
+    ascend_contacts?: unknown[];
+    known_risks?: unknown[];
+    notes?: string | null;
+    config?: Record<string, unknown>;
 }
 
 export interface DiscoveryQuestionItem {

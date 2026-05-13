@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
     default_llm_provider: str = Field(default="deepseek", alias="DEFAULT_LLM_PROVIDER")
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"], alias="CORS_ORIGINS")
+    sqlserver_host: str = Field(default="localhost", alias="SQLSERVER_HOST")
+    sqlserver_port: int = Field(default=1433, alias="SQLSERVER_PORT")
+    sqlserver_db: str = Field(default="PFx_Master", alias="SQLSERVER_DB")
+    sqlserver_user: str = Field(default="SA", alias="SQLSERVER_USER")
+    sqlserver_password: str = Field(default="", alias="SQLSERVER_PASSWORD")
     artifacts_dir: Path = STORAGE_DIR / "artifacts"
     uploads_dir: Path = STORAGE_DIR / "uploads"
     generated_dir: Path = STORAGE_DIR / "generated"

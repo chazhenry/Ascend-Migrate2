@@ -3,9 +3,16 @@
     "private": true,
     "version": "0.1.0",
     "scripts": {
-        "turbo": "concurrently -k -n backend,frontend -c blue,magenta \"python -m uvicorn --app-dir backend app.main:app --reload --host localhost --port 8000\" \"npm --prefix frontend run dev -- --host localhost\""
+        "turbo": "node scripts/dev-runner.mjs restart && node scripts/dev-runner.mjs status",
+        "turbo:start": "node scripts/dev-runner.mjs start && node scripts/dev-runner.mjs status",
+        "turbo:stop": "node scripts/dev-runner.mjs stop",
+        "turbo:status": "node scripts/dev-runner.mjs status",
+        "turbo:restart": "node scripts/dev-runner.mjs restart",
+        "turbo:logs": "powershell -NoProfile -Command \"Get-Content .devrunner/backend.log,.devrunner/frontend.log -Wait\"",
+        "turbo:fg": "concurrently --kill-others-on-fail -n backend,frontend -c blue,magenta \"python -m uvicorn --app-dir backend app.main:app --reload --reload-dir backend/app --host localhost --port 8001\" \"npm --prefix frontend run dev -- --host localhost\""
     },
     "devDependencies": {
-        "concurrently": "^9.2.1"
+        "concurrently": "^9.2.1",
+        "kill-port": "^2.0.1"
     }
 }
